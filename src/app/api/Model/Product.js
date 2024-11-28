@@ -26,6 +26,14 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    originalprice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    sizes: {
+      type: [String],
+    },
     price: {
       type: Number,
       required: true,
@@ -46,8 +54,8 @@ const productSchema = new mongoose.Schema(
     },
     images: [
       {
-        url: { type: String, required: true }, 
-        public_id: { type: String, required: true }, 
+        url: { type: String, required: true },
+        public_id: { type: String, required: true },
       },
     ],
     reviews: [reviewSchema],
@@ -55,6 +63,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
     createdAt: {
       type: Date,
       default: Date.now,

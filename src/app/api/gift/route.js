@@ -66,9 +66,12 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("Error adding gift:", error);
-    return new Response.json({ error: "Error adding gift" }), {
-      status: 500,
-    });
+    return (
+      new Response.json({ error: "Error adding gift" }),
+      {
+        status: 500,
+      }
+    );
   }
 }
 

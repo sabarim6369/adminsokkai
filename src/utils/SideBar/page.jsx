@@ -6,17 +6,21 @@ import CouponPopup from "../Popup/Coupun/page";
 import AddProductForm from "../Popup/AddProduct/page";
 import Stockavailability from "../Popup/stockavailability/page";
 import GiftVoucherPopup from "../Popup/GiftPopup/page";
+import Signup from "@/utils/Popup/signup/page";
 const SideBar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [coupunpopup, setcoupunpopup] = useState(false);
   const [AddProduct, setAddProduct] = useState(false);
   const [Stockavailability1, setstockavailability] = useState(false);
   const [giftvoucher, setgiftvoucher] = useState(false);
+  const [signuppopup, setsignuppopup] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
+  const togglesignup = () => {
+    setsignuppopup(!signuppopup);
+  };
   const toggleCouponPopup = () => {
     setcoupunpopup(!coupunpopup);
   };
@@ -119,7 +123,7 @@ const SideBar = () => {
 
             <li>
               <button
-                onClick={toggleCouponPopup} // Toggle the popup here
+                onClick={togglesignup}
                 className="flex items-center gap-4 p-3 text-white rounded-lg hover:bg-purple-700 cursor-pointer"
               >
                 <FaHome className="text-xl" />
@@ -129,7 +133,7 @@ const SideBar = () => {
           </ul>
           <div className="flex flex-col items-center gap-5">
             <div
-              onClick={toggleCouponPopup} // Toggle the popup here
+              onClick={toggleCouponPopup}
               className="bg-[#514f4f79] text-white p-6 mt-2 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center w-48 h-10 hover:bg-purple-600 hover:text-white cursor-pointer"
             >
               Add Coupon Data
@@ -166,6 +170,10 @@ const SideBar = () => {
       <GiftVoucherPopup
         value={giftvoucher}
         onClose={() => setgiftvoucher(false)}
+      />
+      <Signup
+        onOpen={signuppopup}
+        onClose={() => setsignuppopup(!signuppopup)}
       />
     </div>
   );

@@ -28,8 +28,11 @@ export async function POST(request) {
   try {
     const form = await request.formData();
     const name = form.get("name");
+    const originalprice = form.get("originalprice");
+    console.log("consoling the original price : ", originalprice);
     const description = form.get("description");
     const price = form.get("price");
+    const sizes = form.get("sizes");
     const category = form.get("category");
     const stock = form.get("stock");
     const brand = form.get("brand");
@@ -55,6 +58,8 @@ export async function POST(request) {
 
     const newProduct = new Product({
       name,
+      sizes,
+      originalprice,
       description,
       price,
       category,
@@ -89,10 +94,12 @@ export async function PUT(request) {
     const form = await request.formData();
 
     const name = form.get("name");
+    const originalprice = form.get("originalprice");
     const description = form.get("description");
     const price = form.get("price");
     const category = form.get("category");
     const stock = form.get("stock");
+    const sizes = form.get("sizes");
     const brand = form.get("brand");
     const files = form.getAll("images");
     const reviews = JSON.parse(form.get("reviews") || "[]");
@@ -141,6 +148,8 @@ export async function PUT(request) {
     const updatedImages = [...retainedImages, ...newImages];
 
     const updatedData = {
+      sizes,
+      originalprice,
       name,
       description,
       price,

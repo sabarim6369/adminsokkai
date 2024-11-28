@@ -6,9 +6,6 @@ import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
 import Updateform from "@/utils/Popup/UpdateForm/page";
 import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-import Image from "next/image";
 const ProductsPage = () => {
   const [products, setproduct] = useState([]);
   const [greeting, setGreeting] = useState("");
@@ -16,15 +13,14 @@ const ProductsPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [confirmName, setConfirmName] = useState("");
   const [showPopupUpdate, setPopupUpdate] = useState(false);
-
   useEffect(() => {
     const hour = new Date().getHours();
+    getproducts();
+
     if (hour < 12) setGreeting("Good Morning");
     else if (hour < 18) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
-    getproducts();
   }, []);
-
   const getproducts = async () => {
     try {
       const response = await axios.get(`/api/products`);
@@ -41,6 +37,11 @@ const ProductsPage = () => {
       const response = await axios.delete(`/api/products?id=${id}`);
       setproduct(products.filter((product) => product.id !== id));
       if (response.status === 200) {
+        setproduct((prevProducts) =>
+          prevProducts.filter(
+            (product) => product.id !== id && product._id !== id
+          )
+        );
         toast.success("Product deleted successfully!");
         setShowPopup(false);
         setSelectedProduct(null);

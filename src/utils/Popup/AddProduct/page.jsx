@@ -9,11 +9,13 @@ import axios from "axios";
 const AddProductForm = ({ value, onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
+    originalprice: "",
     description: "",
     price: "",
     category: "",
     stock: "",
     brand: "",
+    sizes: [],
     images: [],
   });
 
@@ -40,8 +42,10 @@ const AddProductForm = ({ value, onClose }) => {
       data.append("name", formData.name);
       data.append("description", formData.description);
       data.append("price", formData.price);
+      data.append("originalprice", formData.originalprice);
       data.append("category", formData.category);
       data.append("stock", formData.stock);
+      data.append("sizes", JSON.stringify(formData.sizes));
       data.append("brand", formData.brand);
       formData.images.forEach((file) => data.append("images", file));
       for (let [key, value] of data.entries()) {
@@ -92,6 +96,7 @@ const AddProductForm = ({ value, onClose }) => {
     setFormData({
       name: "",
       description: "",
+      originalprice: "",
       price: "",
       category: "",
       stock: "",
@@ -145,8 +150,21 @@ const AddProductForm = ({ value, onClose }) => {
                 required
               />
             </div>
-
-            {/* Price */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                originalprice ($)
+              </label>
+              <input
+                type="number"
+                name="originalprice"
+                value={formData.originalprice}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter product price"
+                min="0"
+                required
+              />
+            </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">
                 Price ($)
@@ -177,6 +195,44 @@ const AddProductForm = ({ value, onClose }) => {
                 placeholder="Enter product category"
                 required
               />
+            </div>
+            {/* Size Selection */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Sizes Available
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {["S", "M", "L", "XL"].map((size) => (
+                  <div key={size} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={size}
+                      name="sizes"
+                      value={size}
+                      checked={formData.sizes?.includes(size)}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        const sizes = formData.sizes || [];
+                        if (sizes.includes(value)) {
+                          setFormData({
+                            ...formData,
+                            sizes: sizes.filter((item) => item !== value),
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            sizes: [...sizes, value],
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 text-indigo-500 border-gray-300 rounded focus:ring-indigo-400"
+                    />
+                    <label htmlFor={size} className="ml-2 text-gray-800">
+                      {size}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Stock */}
