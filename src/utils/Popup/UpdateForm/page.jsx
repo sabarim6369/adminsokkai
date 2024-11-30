@@ -218,7 +218,7 @@ const UpdateProductForm = ({ product, value, onClose }) => {
                     key={index}
                     className="flex justify-between items-center px-4 py-2 bg-gray-100 rounded-lg"
                   >
-                    <span>{file.name}</span>
+                    <span>{file?.name || "Unnamed File"}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index, "new")}
@@ -229,6 +229,7 @@ const UpdateProductForm = ({ product, value, onClose }) => {
                   </div>
                 ))}
               </div>
+              ;
             </div>
 
             {/* Submit and Cancel */}
