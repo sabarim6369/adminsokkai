@@ -2,11 +2,16 @@ import mongoose from "mongoose";
 
 const GiftSchema = new mongoose.Schema(
   {
-    photos: { type: String, required: true },
+    photos: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
     name: { type: String, required: true },
     price: { type: Number, required: true },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Gift || mongoose.model("Gift", GiftSchema);
+export default mongoose.models.gifts || mongoose.model("gifts", GiftSchema);

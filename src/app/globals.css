@@ -2,9 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  input,
+  textarea,
+  select {
+    @apply text-black focus:text-black hover:text-black;
+  }
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {

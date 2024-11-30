@@ -58,7 +58,10 @@ const ProductsPage = () => {
     setConfirmName("");
   };
 
-  const UpdateForm = () => {
+  const openupdateform = (product) => {
+    console.log("function triggered  : ", product);
+    setSelectedProduct(product);
+    console.log("selected product : ", product);
     setPopupUpdate(true);
   };
 
@@ -76,7 +79,7 @@ const ProductsPage = () => {
         <h1 className="text-2xl font-bold mt-9 xl:ml-[16.8%] text-black ml-3 font-Cabin mb-4">
           {greeting}, Vijay
         </h1>
-        <div className="grid grid-cols-1 xl:ml-72 md:grid-cols-2 lg:grid-cols-3 xl:gap-6 gap-3 ml-3">
+        <div className="grid grid-cols-1 xl:w-80 xl:ml-72 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3  xl:gap-[150%] gap-3 ml-3">
           {products.map((product, index) => (
             <div key={product.id || product._id || index}>
               {" "}
@@ -134,7 +137,7 @@ const ProductsPage = () => {
                 <div className="flex space-x-4 mt-4">
                   <button
                     className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
-                    onClick={UpdateForm}
+                    onClick={() => openupdateform(product)}
                   >
                     <FaEdit color="white" />
                   </button>
@@ -197,7 +200,7 @@ const ProductsPage = () => {
 
       {showPopupUpdate && (
         <Updateform
-          isVisible={showPopupUpdate}
+          value={showPopupUpdate}
           onClose={() => setPopupUpdate(false)}
           product={selectedProduct}
         />

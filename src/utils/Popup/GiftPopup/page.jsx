@@ -12,6 +12,8 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     photo: null,
     name: "",
     price: "",
+    oldImage: "", // To store the old image URL
+    oldPublicId: "", // To store the old image public_id
   });
   const [isEditing, setIsEditing] = useState(false);
   const [preview, setPreview] = useState("");
@@ -49,19 +51,30 @@ const GiftVoucherPopup = ({ value, onClose }) => {
       const formDataObj = new FormData();
       formDataObj.append("name", formData.name);
       formDataObj.append("price", formData.price);
+      formDataObj.append("id", formData.id); // Send the _id if editing
 
-      // If there's a photo, append it as well
+      // If there's a photo and it's different from the old image, delete the old one first
+      if (formData.photo && formData.photo !== formData.oldImage) {
+        await deleteImageFromCloudinary(formData.oldPublicId);
+      }
+
+      // If there's a new photo, append it
       if (formData.photo) {
         formDataObj.append("images", formData.photo); // 'images' is the field name expected in your backend
+      } else {
+        // If no new photo, keep the old one
+        formDataObj.append("oldImage", formData.oldImage);
+        formDataObj.append("oldPublicId", formData.oldPublicId);
       }
 
       // If editing, send a PATCH request; otherwise, POST request
       if (isEditing) {
-        await axios.patch("/api/gift", formDataObj, {
+        const response = await axios.patch("/api/gift", formDataObj, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
+        console.log("response data :", response);
         toast.success("Gift updated successfully!");
       } else {
         const response = await axios.post("/api/gift", formDataObj, {
@@ -81,11 +94,20 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     }
   };
 
-  // Handle file change
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setFormData({ ...formData, photo: file });
     setPreview(URL.createObjectURL(file));
+    setFormData({ ...formData, photo: file });
+  };
+
+  // Delete image from Cloudinary
+  const deleteImageFromCloudinary = async (public_id) => {
+    try {
+      await axios.delete(`/api/gift/delete-image?public_id=${public_id}`);
+      console.log("Image deleted successfully from Cloudinary.");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
   };
 
   // Handle delete action
@@ -102,13 +124,25 @@ const GiftVoucherPopup = ({ value, onClose }) => {
 
   // Handle edit action
   const handleEdit = (gift) => {
-    setFormData({ ...gift, photo: null });
+    setFormData({
+      ...gift,
+      photo: null,
+      oldImage: gift.photos[0]?.url,
+      oldPublicId: gift.photos[0]?.public_id,
+    });
     setIsEditing(true);
   };
 
   // Reset form
   const resetForm = () => {
-    setFormData({ id: null, photo: null, name: "", price: "" });
+    setFormData({
+      id: null,
+      photo: null,
+      name: "",
+      price: "",
+      oldImage: "",
+      oldPublicId: "",
+    });
     setIsEditing(false);
     setPreview("");
   };
@@ -131,7 +165,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
           </div>
 
           {/* Gift List */}
-          <div className="p-6 overflow-y-auto max-h-[60vh]">
+          <div className="p-6 overflow-y-auto max-h-[60vh] text-black">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr>
@@ -146,7 +180,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                   <tr key={gift.id} className="hover:bg-gray-50">
                     <td className="py-2">
                       <img
-                        src={gift.photo}
+                        src={gift.photos[0]?.url}
                         alt={gift.name}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
@@ -183,7 +217,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                 <input
                   type="file"
                   accept="image/*"
-                  className="w-full mt-1 px-3 py-2 border rounded text-black" // Added text-black
+                  className="w-full mt-1 px-3 py-2 border rounded text-black"
                   onChange={handleFileChange}
                 />
                 {preview && (
@@ -200,7 +234,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                 </label>
                 <input
                   type="text"
-                  className="w-full mt-1 px-3 py-2 border rounded text-black" // Added text-black
+                  className="w-full mt-1 px-3 py-2 border rounded text-black"
                   placeholder="Enter gift name"
                   value={formData.name}
                   onChange={(e) =>
@@ -215,7 +249,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                 </label>
                 <input
                   type="number"
-                  className="w-full mt-1 px-3 py-2 border rounded text-black" // Added text-black
+                  className="w-full mt-1 px-3 py-2 border rounded text-black"
                   placeholder="Enter price"
                   value={formData.price}
                   onChange={(e) =>
@@ -230,7 +264,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                   onClick={resetForm}
                   className="px-4 py-2 text-sm bg-gray-600 text-white rounded hover:bg-gray-700"
                 >
-                  Reset
+                  Cancel
                 </button>
                 <button
                   type="submit"

@@ -1,9 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx}", // Pages directory (for older Next.js structure)
-    "./src/**/*.{js,ts,jsx,tsx}", // Src directory (for Next.js apps using `src`)
-    "./components/**/*.{js,ts,jsx,tsx}", // Components directory
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {},

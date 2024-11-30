@@ -1,117 +1,43 @@
+import Coupun from "../Model/Coupun";
 import connectMongoDB from "../Connection";
-import Gift from "../Model/gifts";
-import axios from "axios";
-
-connectMongoDB();
-
-export async function GET(request) {
-  try {
-    const gifts = await Gift.find();
-    return new Response(JSON.stringify(gifts), { status: 200 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Error fetching gifts" }), {
-      status: 500,
-    });
-  }
-}
-
 export async function POST(request) {
-  try {
-    const { name, price, photo } = await request.json();
+  await connectMongoDB();
 
-    if (!name || !price || !photo) {
-      return new Response(
-        JSON.stringify({ error: "All fields are required" }),
-        { status: 400 }
-      );
-    }
+  if (request.method === "POST") {
+    try {
+      const { coupun, pricing, status } = await request.json();
 
-    const uploadResponse = await axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_NAME}/image/upload`,
-      {
-        file: photo,
-        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
-        folder: "gifts",
+      if (!coupun || !pricing) {
+        return new Response(
+          JSON.stringify({ error: "Coupun and pricing are required" }),
+          { status: 400 }
+        );
       }
-    );
 
-    const photoUrl = uploadResponse.data.secure_url;
+      const newCoupun = await Coupun.create({
+        coupun,
+        pricing,
+        status: status || "pending",
+      });
 
-    const newGift = new Gift({ name, price, photo: photoUrl });
-    await newGift.save();
-
-    return new Response(
-      JSON.stringify({ message: "Gift added successfully", gift: newGift }),
-      { status: 201 }
-    );
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Error adding gift" }), {
-      status: 500,
-    });
-  }
-}
-
-export async function PATCH(request) {
-  try {
-    const { id, name, price, photo } = await request.json();
-
-    const updateData = { name, price };
-
-    if (photo) {
-      const uploadResponse = await axios.post(
-        `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_NAME}/image/upload`,
-        {
-          file: photo,
-          upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
-          folder: "gifts",
-        }
+      return new Response(
+        JSON.stringify({ message: "Coupun created successfully", newCoupun }),
+        { status: 201 }
       );
-      updateData.photo = uploadResponse.data.secure_url;
+    } catch (error) {
+      console.error("Error creating coupun:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          details: error.message,
+        }),
+        { status: 500 }
+      );
     }
-
-    const updatedGift = await Gift.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
-
-    if (!updatedGift) {
-      return new Response(JSON.stringify({ error: "Gift not found" }), {
-        status: 404,
-      });
-    }
-
+  } else {
     return new Response(
-      JSON.stringify({
-        message: "Gift updated successfully",
-        gift: updatedGift,
-      }),
-      { status: 200 }
+      JSON.stringify({ error: `Method ${request.method} not allowed` }),
+      { status: 405 }
     );
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Error updating gift" }), {
-      status: 500,
-    });
-  }
-}
-
-export async function DELETE(request) {
-  try {
-    const { id } = new URL(request.url).searchParams;
-
-    const deletedGift = await Gift.findByIdAndDelete(id);
-
-    if (!deletedGift) {
-      return new Response(JSON.stringify({ error: "Gift not found" }), {
-        status: 404,
-      });
-    }
-
-    return new Response(
-      JSON.stringify({ message: "Gift deleted successfully" }),
-      { status: 200 }
-    );
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Error deleting gift" }), {
-      status: 500,
-    });
   }
 }

@@ -36,7 +36,7 @@ const SideBar = () => {
   };
 
   return (
-    <div className="flex max-h-full bg-gradient-to-br from-black via-gray-900 to-gray-800 font-Cabin xl:overflow-hidden">
+    <div className="flex max-h-full w-80 bg-gradient-to-br from-black via-gray-900 to-gray-800 font-Cabin xl:overflow-hidden">
       <button
         onClick={toggleSidebar}
         type="button"
@@ -175,6 +175,7 @@ const SideBar = () => {
         onOpen={signuppopup}
         onClose={() => setsignuppopup(!signuppopup)}
       />
+       
     </div>
   );
 };

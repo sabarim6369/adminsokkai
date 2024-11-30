@@ -19,33 +19,36 @@ const uploadToCloudinary = async (file) => {
 const deleteFromCloudinary = async (public_id) => {
   await cloudinary.v2.uploader.destroy(public_id);
 };
-
-// Create Product
 export async function POST(request) {
   await connectMongoDB();
 
   console.log("data passed");
+
   try {
+    // Parse the form data
     const form = await request.formData();
+
     const name = form.get("name");
     const originalprice = form.get("originalprice");
-    console.log("consoling the original price : ", originalprice);
     const description = form.get("description");
     const price = form.get("price");
     const sizes = form.get("sizes");
     const category = form.get("category");
     const stock = form.get("stock");
     const brand = form.get("brand");
+
     const files = form.getAll("images");
+
+    // Log all form data entries for debugging
     for (let [key, value] of form.entries()) {
       console.log(`${key}:`, value);
     }
 
+    // Validate if files were uploaded
     if (!files || files.length === 0) {
-      return Response.json(
-        { error: "No files were uploaded" },
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: "No files were uploaded" }), {
+        status: 400,
+      });
     }
 
     const images = await Promise.all(
@@ -55,7 +58,7 @@ export async function POST(request) {
         return await uploadToCloudinary(`data:${file.type};base64,${base64}`);
       })
     );
-
+    console.log("consoling the cloud url : ",images);
     const newProduct = new Product({
       name,
       sizes,
@@ -68,10 +71,15 @@ export async function POST(request) {
       images,
     });
 
+  
     const savedProduct = await newProduct.save();
-    return Response.json(savedProduct, { status: 201 });
+    console.log("consoling the saved product : ",savedProduct);    
+    return new Response(JSON.stringify(savedProduct), { status: 201 });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 400 });
+    console.error("Error while creating product:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400,
+    });
   }
 }
 export async function GET() {
@@ -91,6 +99,8 @@ export async function PUT(request) {
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
+    console.log("Product ID:", id);
+
     const form = await request.formData();
 
     const name = form.get("name");
@@ -99,17 +109,18 @@ export async function PUT(request) {
     const price = form.get("price");
     const category = form.get("category");
     const stock = form.get("stock");
-    const sizes = form.get("sizes");
+    const sizes = JSON.parse(form.get("sizes") || "[]");
     const brand = form.get("brand");
-    const files = form.getAll("images");
-    const reviews = JSON.parse(form.get("reviews") || "[]");
-    const sentImagePublicIds = JSON.parse(form.get("sentImages") || "[]");
 
+    const sentImagePublicIds = JSON.parse(form.get("sentImages") || "[]");
+    const files = form.getAll("images");
+    console.log("New images from frontend:", files);
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {
-      return Response.json({ error: "Product not found" }, { status: 404 });
+      return new Response(JSON.stringify({ error: "Product not found" }), {
+        status: 404,
+      });
     }
-
     const retainedImages = existingProduct.images.filter((img) =>
       sentImagePublicIds.includes(img.public_id)
     );
@@ -126,37 +137,44 @@ export async function PUT(request) {
           })
         );
       } catch (error) {
-        console.error("Error while removing images:", error);
-        return Response.json(
-          { error: "Failed to remove unused images" },
+        console.error("Error while removing images from Cloudinary:", error);
+        return new Response(
+          JSON.stringify({ error: "Failed to remove unused images" }),
           { status: 500 }
         );
       }
     }
 
-    const newImages = files.length
-      ? await Promise.all(
-          files.map(async (file) => {
-            const buffer = await file.arrayBuffer();
-            const base64 = Buffer.from(buffer).toString("base64");
-            return await uploadToCloudinary(
-              `data:${file.type};base64,${base64}`
-            );
-          })
-        )
-      : [];
+    const newImages = await Promise.all(
+      files.map(async (file) => {
+        try {
+          console.log("Uploading new image:", file.name || "Unnamed file");
+          const buffer = await file.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString("base64");
+          const uploadedImage = await uploadToCloudinary(
+            `data:${file.type};base64,${base64}`
+          );
+          console.log("Uploaded image successfully:", uploadedImage);
+          return uploadedImage;
+        } catch (err) {
+          console.error("Error uploading image:", err);
+          throw err;
+        }
+      })
+    );
+
     const updatedImages = [...retainedImages, ...newImages];
+    console.log("Final updated images:", updatedImages);
 
     const updatedData = {
-      sizes,
-      originalprice,
       name,
+      originalprice,
       description,
       price,
       category,
       stock,
+      sizes,
       brand,
-      reviews,
       images: updatedImages,
       updatedAt: Date.now(),
     };
@@ -165,10 +183,16 @@ export async function PUT(request) {
       new: true,
     });
 
-    return Response.json(updatedProduct, { status: 200 });
+    return new Response(JSON.stringify(updatedProduct), { status: 200 });
   } catch (error) {
     console.error("Error updating product:", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return new Response(
+      JSON.stringify({
+        error: "Failed to update product",
+        details: error.message,
+      }),
+      { status: 500 }
+    );
   }
 }
 
