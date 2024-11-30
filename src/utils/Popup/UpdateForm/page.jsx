@@ -29,11 +29,14 @@ const UpdateProductForm = ({ product, value, onClose }) => {
   // Handles file input changes
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
+    console.log("Selected files:", files);
+
     if (files.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        newImages: [...prev.newImages, ...files],
-      }));
+      setFormData((prev) => {
+        const updatedImages = [...(prev.newImages || []), ...files];
+        console.log("Updated images:", updatedImages);
+        return { ...prev, newImages: updatedImages };
+      });
     }
   };
 

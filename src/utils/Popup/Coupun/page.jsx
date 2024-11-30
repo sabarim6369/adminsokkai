@@ -5,6 +5,7 @@ import couponCode from "coupon-code";
 import { FaCheckCircle, FaClipboard, FaTimes, FaMagic } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const CouponPopup = ({ value, onClose }) => {
   const [couponData, setCouponData] = useState({
     couponName: "",
@@ -26,25 +27,22 @@ const CouponPopup = ({ value, onClose }) => {
     const { name, value } = e.target;
     setCouponData({ ...couponData, [name]: value });
   };
-
   const generateCoupon = () => {
     const generatedCode = couponCode.generate();
     setCouponData({ ...couponData, couponCode: generatedCode });
   };
-
   const copyToClipboard = () => {
     navigator.clipboard.writeText(couponData.couponCode);
   };
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post(`/api/coupun`, {
-        name: couponData.couponName,
-        pricing: couponData.discountPrice,
+      const response = await axios.post("/api/coupun", {
         coupun: couponData.couponCode,
+        pricing: couponData.discountPrice,
+        name: couponData.couponName,
       });
 
-      console.log("Coupon created successfully:", response.data);
       if (response.status === 201 || response.status === 200) {
         toast.success("Coupon created successfully!");
         setTimeout(() => {
@@ -53,7 +51,6 @@ const CouponPopup = ({ value, onClose }) => {
       }
     } catch (error) {
       console.error("Error creating coupon:", error);
-
       if (error.response) {
         toast.error(`Error: ${error.response.data.error}`);
       } else {
@@ -79,6 +76,7 @@ const CouponPopup = ({ value, onClose }) => {
             </button>
           </div>
           <div className="mt-4 space-y-4">
+            {/* Coupon Name Input */}
             <div>
               <label className="block text-black">Coupon Name</label>
               <input
@@ -90,6 +88,7 @@ const CouponPopup = ({ value, onClose }) => {
               />
             </div>
 
+            {/* Discount Price Input */}
             <div>
               <label className="block text-black">Discount Price</label>
               <input
@@ -101,6 +100,7 @@ const CouponPopup = ({ value, onClose }) => {
               />
             </div>
 
+            {/* Coupon Code Input */}
             <div>
               <label className="block text-black">Coupon Code</label>
               <div className="flex items-center border mt-2">
@@ -111,12 +111,7 @@ const CouponPopup = ({ value, onClose }) => {
                   value={couponData.couponCode}
                   onChange={handleInputChange}
                   className="p-2 text-black w-full"
-                  style={{
-                    color: "black",
-                    "::placeholder": { color: "black" },
-                  }}
                 />
-
                 <button
                   onClick={generateCoupon}
                   className="ml-2 p-2 text-blue-500"
@@ -125,16 +120,17 @@ const CouponPopup = ({ value, onClose }) => {
                 </button>
                 <button
                   onClick={copyToClipboard}
-                  className="ml-2 p-2  text-black"
+                  className="ml-2 p-2 text-black"
                 >
                   <FaClipboard />
                 </button>
               </div>
             </div>
 
+            {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              className="mt-4 w-40 rounded-lg xl:ml-16 bg-green-500  text-white p-2"
+              className="mt-4 w-40 rounded-lg bg-green-500 text-white p-2"
             >
               Create Coupon
             </button>
