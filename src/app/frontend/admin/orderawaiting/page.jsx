@@ -1,59 +1,82 @@
 "use client";
-
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 export default function AdminOrders() {
-  const initialOrders = [
-    {
-      id: 1,
-      customerName: "John Doe",
-      phoneNumber: "+1 123-456-7890",
-      customerDetails: "johndoe@example.com",
-      address: "123 Main Street, Springfield, USA",
-      products: [
-        { name: "T-shirt", quantity: 2, size: "M", price: 20 },
-        { name: "Jeans", quantity: 1, size: "L", price: 40 },
-      ],
-      paymentMethod: "Online",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      customerName: "Jane Smith",
-      phoneNumber: "+1 987-654-3210",
-      customerDetails: "janesmith@example.com",
-      address: "456 Elm Street, Shelbyville, USA",
-      products: [
-        { name: "Dress", quantity: 1, size: "S", price: 50 },
-        { name: "Jacket", quantity: 1, size: "M", price: 70 },
-      ],
-      paymentMethod: "Offline",
-      status: "Pending",
-    },
-  ];
-  const [orders, setOrders] = useState(initialOrders);
-
+  const [orders, setOrders] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get("/api/customer/orderdata");
+        const data = response.data.users[0].purchaseHistory.map((order) => ({
+          id: order._id,
+          customerName: response.data.users[0].name,
+          phoneNumber: response.data.users[0].address[0].phone,
+          email: response.data.users[0].email,
+          address: response.data.users[0].address.find(
+            (addr) => addr._id === order.addressId
+          ).address,
+          location: response.data.users[0].address.find(
+            (addr) => addr._id === order.addressId
+          ).location,
+          products: order.products.map((product) => ({
+            name: product.productDetails.name,
+            quantity: product.quantity,
+            price: product.totalPrice / product.quantity,
+            size: product.productDetails.sizes.join(", "),
+          })),
+          totalAmount: order.totalAmount,
+          status: order.status,
+          paymentMethod: "Online Payment", // Replace with actual payment method if available
+        }));
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const openPopup = (orderId) => {
     setSelectedOrderId(orderId);
     setIsPopupOpen(true);
   };
 
-  const handleStatusChange = (newStatus) => {
-    if (selectedOrderId) {
-      const updatedOrders = orders.map((order) =>
-        order.id === selectedOrderId ? { ...order, status: newStatus } : order
-      );
-      setOrders(updatedOrders);
-      closePopup();
-    }
-  };
-
   const closePopup = () => {
     setIsPopupOpen(false);
     setSelectedOrderId(null);
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    if (selectedOrderId) {
+      try {
+        // Update the status on the backend
+        await axios.post(`/api/orders/update-status`, {
+          orderId: selectedOrderId,
+          status: newStatus,
+        });
+
+        // Trigger WhatsApp communication
+        await axios.post(`/api/messages/whatsapp`, {
+          orderId: selectedOrderId,
+          status: newStatus,
+        });
+
+        // Update the UI
+        const updatedOrders = orders.map((order) =>
+          order.id === selectedOrderId ? { ...order, status: newStatus } : order
+        );
+        setOrders(updatedOrders);
+
+        closePopup();
+      } catch (error) {
+        console.error("Error updating status:", error);
+      }
+    }
   };
 
   const calculateTotalPrice = (products) => {
@@ -64,60 +87,95 @@ export default function AdminOrders() {
   };
 
   return (
-    <div className="p-4  bg-gray-50 text-base  min-h-screen">
-      <h1 className="font-bold mb-4 text-gray-800 text-center ">
+    <div className="p-4 bg-gray-50 min-h-screen">
+      <h1 className="font-bold mb-4 text-gray-800 text-center text-xl">
         Admin Orders Management
       </h1>
-      <div className="overflow-x-auto w-[600%] xl:w-full">
-        <table className="w-full border border-gray-200 bg-white shadow-lg">
+      <div className="overflow-x-auto">
+        <table className="w-full border border-gray-800 bg-white shadow-lg">
           <thead>
-            <tr className="bg-gray-100 text-left font-medium text-gray-700">
-              <th className="px-2 py-2 border-b">Order ID</th>
-              <th className="px-2 py-2 border-b">Customer Name</th>
-              <th className="px-2 py-2 border-b">Phone Number</th>
-              <th className="px-2 py-2 border-b">Email</th>
-              <th className="px-2 py-2 border-b">Address</th>
-              <th className="px-2 py-2 border-b w-[10%]">Order Details</th>
-              <th className="px-2 py-2 border-b">Total Price</th>
-              <th className="px-2 py-2 border-b">Payment Method</th>
-              <th className="px-2 py-2 border-b">Status</th>
+            <tr className="bg-gray-200 text-left font-semibold text-gray-800 border-b-2 border-gray-800">
+              <th className="px-4 py-2 border-r-2 border-gray-800">Order ID</th>
+              <th className="px-4 py-2 border-r-2 border-gray-800">
+                Customer Name
+              </th>
+              <th className="px-4 py-2 border-r-2 border-gray-800">
+                Phone Number
+              </th>
+              <th className="px-4 py-2 border-r-2 border-gray-800">Email</th>
+              <th className="px-4 py-2 border-r-2 border-gray-800">Address</th>
+              <th className="px-4 py-2 border-r-2 border-gray-800 w-1/4">
+                Order Details
+              </th>
+              <th className="px-4 py-2 border-r-2 border-gray-800">
+                Total Price
+              </th>
+              <th className="px-4 py-2">Status</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-50">
-                <td className="px-2 py-2 border-b text-gray-800">
+              <tr
+                key={order.id}
+                className="hover:bg-gray-100 text-gray-800 border-b-2 border-gray-800"
+              >
+                <td className="px-4 py-2 border-r-2 border-gray-800">
                   {order.id}
                 </td>
-                <td className="px-2 py-2 border-b text-gray-800">
+                <td className="px-4 py-2 border-r-2 border-gray-800">
                   {order.customerName}
                 </td>
-                <td className="px-2 py-2 border-b text-gray-800">
+                <td className="px-4 py-2 border-r-2 border-gray-800">
                   {order.phoneNumber}
                 </td>
-                <td className="px-2 py-2 border-b text-gray-800">
-                  {order.customerDetails}
+                <td className="px-4 py-2 border-r-2 border-gray-800">
+                  {order.email}
                 </td>
-                <td className="px-2 py-2 border-b text-gray-800">
+                <td className="px-4 py-2 border-r-2 border-gray-800">
                   {order.address}
                 </td>
-                <td className="px-2 w-[15%]  py-2 border-b font-bold text-gray-800">
-                  <ul className="list-disc ml-4">
-                    {order.products.map((product, index) => (
-                      <li key={index} className="text-sm sm:text-base">
-                        {product.name} - {product.quantity} pcs (Size:{" "}
-                        {product.size}) - ${product.price}
-                      </li>
-                    ))}
-                  </ul>
+                <td className="px-4 py-2 border-r-2 border-gray-800">
+                  <table className="w-full border border-gray-500">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="px-2 py-1 border border-gray-500">
+                          Product
+                        </th>
+                        <th className="px-2 py-1 border border-gray-500">
+                          Quantity
+                        </th>
+                        <th className="px-2 py-1 border border-gray-500">
+                          Size
+                        </th>
+                        <th className="px-2 py-1 border border-gray-500">
+                          Price
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order.products.map((product, index) => (
+                        <tr key={index}>
+                          <td className="px-2 py-1 border border-gray-500">
+                            {product.name}
+                          </td>
+                          <td className="px-2 py-1 border border-gray-500">
+                            {product.quantity}
+                          </td>
+                          <td className="px-2 py-1 border border-gray-500">
+                            {product.size}
+                          </td>
+                          <td className="px-2 py-1 border border-gray-500">
+                            ₹{product.price}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </td>
-                <td className="px-2 py-2 border-b text-gray-800 font-bold">
-                  ${calculateTotalPrice(order.products)}
+                <td className="px-4 py-2 border-r-2 border-gray-800 font-bold">
+                  ₹{calculateTotalPrice(order.products)}
                 </td>
-                <td className="px-2 py-2 border-b text-green-500 font-bold">
-                  {order.paymentMethod}
-                </td>
-                <td className="px-2 py-2 border-b">
+                <td className="px-4 py-2">
                   <button
                     onClick={() => openPopup(order.id)}
                     className={`px-2 py-2 rounded font-medium text-white transition ${
@@ -136,10 +194,8 @@ export default function AdminOrders() {
           </tbody>
         </table>
       </div>
-
-      {/* Popup Modal */}
       {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 sm:p-0">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 shadow-lg w-full sm:w-96">
             <h2 className="text-lg text-black font-semibold mb-4">
               Change Order Status

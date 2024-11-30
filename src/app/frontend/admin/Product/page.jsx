@@ -79,78 +79,76 @@ const ProductsPage = () => {
         <h1 className="text-2xl font-bold mt-9 xl:ml-[16.8%] text-black ml-3 font-Cabin mb-4">
           {greeting}, Vijay
         </h1>
-        <div className="grid grid-cols-1 xl:w-80 xl:ml-72 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3  xl:gap-[150%] gap-3 ml-3">
-          {products.map((product, index) => (
-            <div key={product.id || product._id || index}>
-              {" "}
-              <div className="bg-white shadow-lg border border-gray-300 rounded-lg p-6 flex flex-col items-center w-96 space-y-4">
-                <img
-                  src={product.images?.[0]?.url || "/placeholder-image.png"}
-                  alt={product.name}
-                  className="w-60 h-60 rounded-lg mb-4"
-                />
+        <div className="xl:ml-[19%] lg:ml-[23%]">
+          <div className="grid grid-cols-1 xl:w-full md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3  gap-y-8 px-3">
+            {products.map((product, index) => (
+              <div
+                key={product.id || product._id || index}
+                className="w-full sm:w-72 md:w-80 lg:w-[70%] xl:w-[90%]"
+              >
+                <div className="bg-white shadow-lg border border-gray-300 rounded-lg p-6 flex flex-col items-center space-y-4">
+                  <img
+                    src={product.images?.[0]?.url || "/placeholder-image.png"}
+                    alt={product.name}
+                    className="w-40 h-40 sm:w-48 sm:h-48 lg:w-60 lg:h-60 rounded-lg mb-4"
+                  />
 
-                <div className="flex flex-col font-Cabin w-full space-y-2">
-                  <div className="flex justify-between font-Cabin text-xl">
-                    <span className="text-gray-500 text-xl font-semibold">
-                      Name:
-                    </span>
-                    <span className="text-black text-xl font-bold">
-                      {product.name}
-                    </span>
+                  <div className="flex flex-col font-Cabin w-full space-y-2">
+                    <div className="flex justify-between text-sm sm:text-lg md:text-xl">
+                      <span className="text-gray-500 font-semibold">Name:</span>
+                      <span className="text-black font-bold">
+                        {product.name}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-sm sm:text-lg md:text-xl">
+                      <span className="text-gray-500 font-semibold">
+                        Price:
+                      </span>
+                      <span className="text-black font-bold">
+                        {product.price}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-sm sm:text-lg md:text-xl">
+                      <span className="text-gray-500 font-semibold">
+                        Stock Availability:
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          product.stock > 0 ? "text-green-500" : "text-red-500"
+                        }`}
+                      >
+                        {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-sm sm:text-lg md:text-xl">
+                      <span className="text-gray-500 font-semibold">
+                        Total Revenue:
+                      </span>
+                      <span className="text-black font-bold">$12345</span>
+                    </div>
                   </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-xl font-semibold">
-                      Price:
-                    </span>
-                    <span className="text-black text-xl font-bold">
-                      {product.price}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-xl font-semibold">
-                      Stock Availability:
-                    </span>
-                    <span
-                      className={`text-xl font-bold ${
-                        product.stock > 0 ? "text-green-500" : "text-red-500"
-                      }`}
+                  <div className="flex space-x-2 sm:space-x-4 mt-4">
+                    <button
+                      className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700 flex items-center"
+                      onClick={() => openupdateform(product)}
                     >
-                      {product.stock > 0 ? "In Stock" : "Out of Stock"}
-                    </span>
+                      <FaEdit className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                    <button
+                      onClick={() => openDeletePopup(product)}
+                      className="bg-red-500 text-white p-2 rounded hover:bg-red-700 flex items-center"
+                    >
+                      <FaTrashAlt className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
                   </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-xl font-semibold">
-                      Total Revenue:
-                    </span>
-                    {/* <span className="text-black text-xl font-bold">
-                      $
-                      {parseFloat(product.price.replace("$", "")) *
-                        product.totalPurchases}
-                    </span> */}
-                  </div>
-                </div>
-
-                <div className="flex space-x-4 mt-4">
-                  <button
-                    className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
-                    onClick={() => openupdateform(product)}
-                  >
-                    <FaEdit color="white" />
-                  </button>
-                  <button
-                    onClick={() => openDeletePopup(product)}
-                    className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
-                  >
-                    <FaTrashAlt color="white" />
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -208,5 +206,4 @@ const ProductsPage = () => {
     </div>
   );
 };
-
 export default ProductsPage;

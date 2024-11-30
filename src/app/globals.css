@@ -10,14 +10,15 @@
   }
 }
 
+/* Variables for light and dark mode */
 :root {
   --background: #ffffff;
+  --foreground: #000000;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #ffffff;
-
     --foreground: #ededed;
   }
 }
@@ -26,4 +27,59 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Universal content block for media query adjustments */
+* {
+  box-sizing: border-box; /* Ensure padding and border are included in element's width */
+}
+
+/* Prevent horizontal scrolling by controlling container layout */
+html,
+body {
+  max-width: 100%; /* Prevent overflow */
+}
+
+/* Ensure elements shrink or wrap within the viewport */
+.container {
+  display: flex;
+  flex-wrap: wrap; /* Wrap overflowing content to a new line */
+  justify-content: space-between; /* Adjust spacing for better responsiveness */
+  align-items: center;
+  width: 100%; /* Take full width */
+  overflow-x: hidden; /* Hide horizontal overflow */
+}
+
+/* Media queries for responsive design */
+@media screen and (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Stack elements vertically on smaller screens */
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .container {
+    padding: 10px;
+    text-align: center; /* Center align for smaller screens */
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%; /* Make inputs and selects take full width */
+  }
+}
+
+/* Handle overflowing text gracefully */
+.text-overflow {
+  overflow-wrap: break-word; /* Break long words */
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto; /* Hyphenate if needed */
 }

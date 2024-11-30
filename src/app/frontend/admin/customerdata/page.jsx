@@ -4,13 +4,13 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const Clients = () => {
-  const [clients, setClients] = useState([]); // Corrected state variable name to match convention
+  const [clients, setClients] = useState([]); 
   const [showPopup, setPopup] = useState(false);
 
   useEffect(() => {
     const fetchClientData = async () => {
       try {
-        const response = await axios.get("/api/customer/customerhistory");
+        const response = await axios.get("/api/customer/clientdata");
         console.log(response.data);
         const data = response.data;
         if (data && data.users) {

@@ -1,178 +1,45 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const CouponHistory = () => {
-  const coupons = [
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-    {
-      id: 1,
-      couponCode: "SUMMER2024",
-      validity: "2024-12-31",
-      status: "Availed",
-      generatedBy: "Admin1",
-      availedBy: "JohnDoe",
-    },
-    {
-      id: 2,
-      couponCode: "WINTER2024",
-      validity: "2024-11-30",
-      status: "Pending",
-      generatedBy: "Admin2",
-      availedBy: "",
-    },
-    {
-      id: 3,
-      couponCode: "FESTIVE2024",
-      validity: "2024-10-31",
-      status: "Availed",
-      generatedBy: "Admin3",
-      availedBy: "JaneSmith",
-    },
-  ];
+  const [coupons, setCoupons] = useState([]);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        const response = await fetch("/api/coupun");
+        const data = await response.json();
+        if (data.coupons) {
+          setCoupons(data.coupons);
+        } else {
+          setError("No coupons found.");
+        }
+      } catch (error) {
+        setError("Error fetching coupons: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCoupons();
+  }, []);
+
+  const handleViewMore = (couponId) => {
+    const coupon = coupons.find((coupon) => coupon._id === couponId);
+    setSelectedCoupon(coupon);
+  };
+
+  if (loading) {
+    return <p>Loading coupons...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return (
     <div className="min-h-screen bg-black-100 py-6 px-4 font-Cabin xl:text-xl">
@@ -192,33 +59,36 @@ const CouponHistory = () => {
                 Coupon Code
               </th>
               <th className="py-3 px-6 text-sm font-semibold border border-gray">
-                Validity
+                pricing
               </th>
               <th className="py-3 px-6 text-sm font-semibold border border-gray">
                 Status
               </th>
               <th className="py-3 px-6 text-sm font-semibold border border-gray">
-                Generated By
+                created date
               </th>
               <th className="py-3 px-6 text-sm font-semibold border border-gray">
-                Availed By
+                Claimed date
+              </th>
+              <th className="py-3 px-6 text-sm font-semibold border border-gray">
+                Action
               </th>
             </tr>
           </thead>
           <tbody>
             {coupons.map((coupon, index) => (
               <tr
-                key={coupon.id}
+                key={coupon._id}
                 className="group hover:bg-black hover:text-white text-left"
               >
                 <td className="py-3 px-6 text-sm text-gray-700 group-hover:text-white border-t border-b border-black">
                   {index + 1}
                 </td>
                 <td className="py-3 px-6 text-sm text-gray-700 group-hover:text-white border-t border-l-2 border-b border-black">
-                  {coupon.couponCode}
+                  {coupon.coupun}
                 </td>
                 <td className="py-3 px-6 text-sm text-gray-700 group-hover:text-white border-t border-l-2 border-b border-black">
-                  {coupon.validity}
+                  {coupon.pricing}
                 </td>
                 <td className="py-3 px-6 text-sm text-center group-hover:text-white border-t border-l-2 border-b border-black">
                   <span
@@ -232,16 +102,61 @@ const CouponHistory = () => {
                   </span>
                 </td>
                 <td className="py-3 px-6 text-sm text-gray-700 group-hover:text-white border-t border-l-2 border-b border-black">
-                  {coupon.generatedBy}
+                  {new Date(coupon.createdAt)
+                    .toLocaleDateString("en-GB")
+                    .split("/")
+                    .join("/")}
                 </td>
                 <td className="py-3 px-6 text-sm text-left text-gray-700 group-hover:text-white border-t border-l-2 border-b border-black">
-                  {coupon.status === "Availed" ? coupon.availedBy : "Pending"}
+                  {new Date(coupon.updatedAt)
+                    .toLocaleDateString("en-GB")
+                    .split("/")
+                    .join("/")}
+                </td>
+
+                <td className="py-3 px-6 text-sm text-gray-700 group-hover:text-white border-t border-l-2 border-b border-black">
+                  {coupon.user ? coupon.user.name : "Yet to be Used"}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* View More Details */}
+      {selectedCoupon && (
+        <div className="mt-6 bg-white p-6 shadow-md rounded-md">
+          <h2 className="text-2xl font-semibold mb-4">Coupon Details</h2>
+          <div>
+            <p>
+              <strong>Coupon Code:</strong> {selectedCoupon.coupun}
+            </p>
+            <p>
+              <strong>Pricing:</strong> {selectedCoupon.pricing}
+            </p>
+            <p>
+              <strong>Status:</strong> {selectedCoupon.status}
+            </p>
+            <p>
+              <strong>Created At:</strong>{" "}
+              {new Date(selectedCoupon.createdAt).toLocaleString()}
+            </p>
+            <p>
+              <strong>Availed At:</strong>{" "}
+              {selectedCoupon.updatedAt
+                ? new Date(selectedCoupon.updatedAt).toLocaleString()
+                : "Not Availed"}
+            </p>
+            <p>
+              <strong>Generated By:</strong>{" "}
+              {selectedCoupon.generatedBy || "N/A"}
+            </p>
+            <p>
+              <strong>Availed By:</strong> {selectedCoupon.availedBy || "N/A"}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
