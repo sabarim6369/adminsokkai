@@ -1,4 +1,5 @@
 "use client";
+import { data } from "autoprefixer";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -6,13 +7,13 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await axios.get("/api/customer/orderdata");
         const data = response.data.users[0].purchaseHistory.map((order) => ({
           id: order._id,
+          userId: response.data.users[0]._id,
           customerName: response.data.users[0].name,
           phoneNumber: response.data.users[0].address[0].phone,
           email: response.data.users[0].email,
@@ -30,9 +31,11 @@ export default function AdminOrders() {
           })),
           totalAmount: order.totalAmount,
           status: order.status,
-          paymentMethod: "Online Payment", // Replace with actual payment method if available
+          paymentMethod: "Online Payment",
         }));
+
         setOrders(data);
+        console.log("consoling the order status for the UI :", data);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -54,19 +57,26 @@ export default function AdminOrders() {
   const handleStatusChange = async (newStatus) => {
     if (selectedOrderId) {
       try {
-        // Update the status on the backend
-        await axios.post(`/api/orders/update-status`, {
-          orderId: selectedOrderId,
-          status: newStatus,
-        });
+        const selectedOrder = orders.find(
+          (order) => order.id === selectedOrderId
+        );
+        const userId = selectedOrder.userId;
 
-        // Trigger WhatsApp communication
-        await axios.post(`/api/messages/whatsapp`, {
-          orderId: selectedOrderId,
-          status: newStatus,
-        });
+        console.log("Status of the product:", newStatus);
+        console.log("Selected order ID:", selectedOrderId);
+        console.log("User ID:", userId);
 
-        // Update the UI
+        await axios.post("/api/customer/orderdata/update-status", {
+          userId,
+          purchaseId: selectedOrderId,
+          status: newStatus.toLowerCase(),
+        });
+        if (newStatus.toLowerCase() === "dispatched") {
+          await axios.post(`/api/communication/Dispatched`);
+        }
+        if (newStatus.toLowerCase() === "cancelled") {
+          await axios.post(`/api/communication/cancelled`);
+        }
         const updatedOrders = orders.map((order) =>
           order.id === selectedOrderId ? { ...order, status: newStatus } : order
         );

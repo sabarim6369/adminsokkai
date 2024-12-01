@@ -4,8 +4,10 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const Clients = () => {
-  const [clients, setClients] = useState([]); 
+  const [clients, setClients] = useState([]);
   const [showPopup, setPopup] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState(null); 
+  const [clientData, setClientData] = useState(null); 
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -25,14 +27,33 @@ const Clients = () => {
     fetchClientData();
   }, []);
 
-  const clickPopup = () => {
-    console.log("Popup triggered");
+  const clickPopup = (clientId) => {
+    console.log("Popup triggered for client with ID:", clientId);
+    setSelectedClientId(clientId);
     setPopup(true);
   };
 
   const closePopup = () => {
     setPopup(false);
+    setSelectedClientId(null); 
+    setClientData(null); 
   };
+
+  useEffect(() => {
+    if (selectedClientId) {
+      const fetchClientDetails = async () => {
+        try {
+          const response = await axios.get(
+            `/api/customer/getbyid?clientId=${selectedClientId}`
+          );
+          setClientData(response.data); 
+        } catch (error) {
+          console.error("Error fetching client details:", error);
+        }
+      };
+      fetchClientDetails();
+    }
+  }, [selectedClientId]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4 font-Cabin text-2xl">
@@ -118,7 +139,7 @@ const Clients = () => {
                 </td>
                 <td className="py-3 px-6 text-sm xl:text-lg text-center border-t border-b border-l-2 border-black">
                   <button
-                    onClick={clickPopup}
+                    onClick={() => clickPopup(client._id)} // Pass the client _id here
                     className="w-24 h-10 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                   >
                     View More
@@ -129,7 +150,9 @@ const Clients = () => {
           </tbody>
         </table>
       </div>
-      {showPopup && <Popup view={showPopup} onClose={closePopup} />}
+      {showPopup && clientData && (
+        <Popup view={showPopup} onClose={closePopup} data={clientData} />
+      )}
     </div>
   );
 };
