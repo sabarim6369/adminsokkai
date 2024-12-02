@@ -6,8 +6,8 @@ import React, { useEffect, useState } from "react";
 const Clients = () => {
   const [clients, setClients] = useState([]);
   const [showPopup, setPopup] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState(null); 
-  const [clientData, setClientData] = useState(null); 
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [clientData, setClientData] = useState(null);
 
   useEffect(() => {
     const fetchClientData = async () => {
@@ -29,14 +29,21 @@ const Clients = () => {
 
   const clickPopup = (clientId) => {
     console.log("Popup triggered for client with ID:", clientId);
-    setSelectedClientId(clientId);
-    setPopup(true);
+
+    const selectedCustomer = clients.find((client) => client._id === clientId);
+    console.log("selected customer : ", selectedCustomer);
+    if (selectedCustomer) {
+      setClientData(selectedCustomer);
+      setPopup(true);
+    } else {
+      console.error("Customer not found!");
+    }
   };
 
   const closePopup = () => {
     setPopup(false);
-    setSelectedClientId(null); 
-    setClientData(null); 
+    setSelectedClientId(null);
+    setClientData(null);
   };
 
   useEffect(() => {
@@ -46,7 +53,7 @@ const Clients = () => {
           const response = await axios.get(
             `/api/customer/getbyid?clientId=${selectedClientId}`
           );
-          setClientData(response.data); 
+          setClientData(response.data);
         } catch (error) {
           console.error("Error fetching client details:", error);
         }
