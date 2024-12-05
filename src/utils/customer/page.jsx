@@ -33,7 +33,6 @@ const Popup = ({ view, onClose, data }) => {
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
       <div className="bg-white text-black w-11/12 max-w-3xl p-6 rounded-lg shadow-xl overflow-y-auto xl:h-[70%] h-[80%] md:h-[80%]">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Customer Summary</h2>
           <button
@@ -44,7 +43,6 @@ const Popup = ({ view, onClose, data }) => {
           </button>
         </div>
 
-        {/* Customer Details */}
         <div className="mb-6">
           <p className="text-lg mb-1">
             <span className="font-semibold">Customer Name:</span> {customerName}
@@ -58,7 +56,6 @@ const Popup = ({ view, onClose, data }) => {
           </p>
         </div>
 
-        {/* Address Details */}
         <div className="mb-6">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">
             Addresses
@@ -92,8 +89,6 @@ const Popup = ({ view, onClose, data }) => {
             <p className="text-gray-600">No addresses available.</p>
           )}
         </div>
-
-        {/* Transaction History */}
         <div className="border-t border-gray-300 pt-4">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">
             Transaction History
