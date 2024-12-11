@@ -2,8 +2,10 @@
 import Popup from "@/utils/customer/page";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+import { ClipLoader } from "react-spinners";
 const Clients = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [clients, setClients] = useState([]);
   const [showPopup, setPopup] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState(null);
@@ -21,12 +23,33 @@ const Clients = () => {
         }
       } catch (error) {
         console.error("Error fetching customer data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchClientData();
   }, []);
-
+  if (loading) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Centers it vertically on the page
+          flexDirection: "column",
+        }}
+      >
+        <ClipLoader color="#4A90E2" size={100} /> {/* Increased size */}
+        <p style={{ fontWeight: "bold", fontSize: "20px", marginTop: "20px" }}>
+          Loading, please wait...
+        </p>
+      </div>
+    );
+  }
   const clickPopup = (clientId) => {
     console.log("Popup triggered for client with ID:", clientId);
 
@@ -46,21 +69,21 @@ const Clients = () => {
     setClientData(null);
   };
 
-  useEffect(() => {
-    if (selectedClientId) {
-      const fetchClientDetails = async () => {
-        try {
-          const response = await axios.get(
-            `/api/customer/getbyid?clientId=${selectedClientId}`
-          );
-          setClientData(response.data);
-        } catch (error) {
-          console.error("Error fetching client details:", error);
-        }
-      };
-      fetchClientDetails();
-    }
-  }, [selectedClientId]);
+  // useEffect(() => {
+  //   if (selectedClientId) {
+  //     const fetchClientDetails = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `/api/customer/getbyid?clientId=${selectedClientId}`
+  //         );
+  //         setClientData(response.data);
+  //       } catch (error) {
+  //         console.error("Error fetching client details:", error);
+  //       }
+  //     };
+  //     fetchClientDetails();
+  //   }
+  // }, [selectedClientId]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4 font-Cabin text-2xl">

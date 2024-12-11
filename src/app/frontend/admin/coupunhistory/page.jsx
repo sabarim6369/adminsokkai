@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-
+import { ClipLoader } from "react-spinners";
 const CouponHistory = () => {
   const [coupons, setCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
@@ -27,6 +27,32 @@ const CouponHistory = () => {
 
     fetchCoupons();
   }, []);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Centers it vertically on the page
+          flexDirection: "column",
+        }}
+      >
+        <ClipLoader color="#4A90E2" size={100} /> {/* Increased size */}
+        <p style={{ fontWeight: "bold", fontSize: "20px", marginTop: "20px" }}>
+          Loading, please wait...
+        </p>
+      </div>
+    );
+  }
+  
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   const handleViewMore = (couponId) => {
     const coupon = coupons.find((coupon) => coupon._id === couponId);

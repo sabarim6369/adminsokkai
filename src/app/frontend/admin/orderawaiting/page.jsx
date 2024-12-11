@@ -11,31 +11,35 @@ export default function AdminOrders() {
     const fetchOrders = async () => {
       try {
         const response = await axios.get("/api/customer/orderdata");
-        const data = response.data.users[0].purchaseHistory.map((order) => ({
-          id: order._id,
-          userId: response.data.users[0]._id,
-          customerName: response.data.users[0].name,
-          phoneNumber: response.data.users[0].address[0].phone,
-          email: response.data.users[0].email,
-          address: response.data.users[0].address.find(
-            (addr) => addr._id === order.addressId
-          ).address,
-          location: response.data.users[0].address.find(
-            (addr) => addr._id === order.addressId
-          ).location,
-          products: order.products.map((product) => ({
-            name: product.productDetails.name,
-            quantity: product.quantity,
-            price: product.totalPrice / product.quantity,
-            size: product.productDetails.sizes.join(", "),
-          })),
-          totalAmount: order.totalAmount,
-          status: order.status,
-          paymentMethod: "Online Payment",
-        }));
+
+        // Process all users and their purchase histories
+        const data = response.data.users.flatMap((user) =>
+          user.purchaseHistory.map((order) => ({
+            id: order._id,
+            userId: user._id,
+            customerName: user.name,
+            phoneNumber: user.address[0]?.phone || "N/A",
+            email: user.email,
+            address:
+              user.address.find((addr) => addr._id === order.addressId)
+                ?.address || "Unknown",
+            location:
+              user.address.find((addr) => addr._id === order.addressId)
+                ?.location || "Unknown",
+            products: order.products.map((product) => ({
+              name: product.productDetails.name,
+              quantity: product.quantity,
+              price: product.totalPrice / product.quantity,
+              size: product.productDetails.sizes.join(", "),
+            })),
+            totalAmount: order.totalAmount,
+            status: order.status,
+            paymentMethod: "Online Payment",
+          }))
+        );
 
         setOrders(data);
-        console.log("consoling the order status for the UI :", data);
+        console.log("Consoling the order status for the UI:", data);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -89,13 +93,6 @@ export default function AdminOrders() {
     }
   };
 
-  const calculateTotalPrice = (products) => {
-    return products.reduce(
-      (total, product) => total + product.price * product.quantity,
-      0
-    );
-  };
-
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <h1 className="font-bold mb-4 text-gray-800 text-center text-xl">
@@ -113,7 +110,7 @@ export default function AdminOrders() {
                 Phone Number
               </th>
               <th className="px-4 py-2 border-r-2 border-gray-800">Email</th>
-              <th className="px-4 py-2 border-r-2 border-gray-800">Address</th>
+              <th className="px-1 py-2 border-r-2 border-gray-800">Address</th>
               <th className="px-4 py-2 border-r-2 border-gray-800 w-1/4">
                 Order Details
               </th>
@@ -141,7 +138,7 @@ export default function AdminOrders() {
                 <td className="px-4 py-2 border-r-2 border-gray-800">
                   {order.email}
                 </td>
-                <td className="px-4 py-2 border-r-2 border-gray-800">
+                <td className="px-2 py-2 border-r-2 border-gray-800">
                   {order.address}
                 </td>
                 <td className="px-4 py-2 border-r-2 border-gray-800">
@@ -183,7 +180,7 @@ export default function AdminOrders() {
                   </table>
                 </td>
                 <td className="px-4 py-2 border-r-2 border-gray-800 font-bold">
-                  ₹{calculateTotalPrice(order.products)}
+                  ₹{order.totalAmount}
                 </td>
                 <td className="px-4 py-2">
                   <button
