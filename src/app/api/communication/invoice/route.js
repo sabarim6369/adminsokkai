@@ -12,134 +12,129 @@ cloudinary.v2.config({
 });
 
 const num = "+918438434868";
+export async function POST(request) {
+  const body = await request.json();
+  const { products, address } = body;
+  console.log("products : ", products);
 
-export async function POST() {
   try {
     const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice</title>
-</head>
-<body style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.6;">
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Invoice</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 20px; line-height: 1.6;">
+    
+      <!-- Header Section -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background-color: #000; color: #fff;">
+        <div>
+<h1 style="margin: 0; font-size: 24px;">
+  SO<span style="color: #87CEEB;">K</span>KAI-THE CLOTHING BRAND
+</h1>
+          <p style="margin: 0; font-size: 14px;">Make all checks payable to Mahendra Kumar</p>
+        </div>
+        <div style="text-align: right;">
+          <h3 style="margin: 0;">Invoice #${new Date().getTime()}</h3>
+          <p style="margin: 0; font-size: 14px;">${new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
+    
+      <!-- Customer Information Section -->
+      <div style="margin-top: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="width: 20%; font-weight: bold;">TO</td>
+            <td style="width: 30%;">${address.name}<br>${address.location}</td>
+            <td style="width: 20%; font-weight: bold;">PHONE</td>
+            <td style="width: 30%;">${address.phone}</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">ADDRESS</td>
+            <td>${address.address.replace(/\n/g, "<br>")}</td>
+            <td style="font-weight: bold;">TYPE</td>
+            <td>${address.type}</td>
+          </tr>
+        </table>
+      </div>
+    
+      <!-- Job Details Section -->
+      <div style="margin-top: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="width: 20%; font-weight: bold;">SALESPERSON</td>
+            <td style="width: 30%;">Mahendra Kumar</td>
+            <td style="width: 20%; font-weight: bold;">JOB</td>
+            <td style="width: 30%;">Product Sale</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">PAYMENT TERMS</td>
+            <td>Due upon receipt</td>
+            <td style="font-weight: bold;">DUE DATE</td>
+            <td>${new Date().toLocaleDateString()}</td>
+          </tr>
+        </table>
+      </div>
+    
+      <!-- Invoice Items Section -->
+      <div style="margin-top: 20px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="background-color: #f0f0f0;">
+              <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">QTY</th>
+              <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">DESCRIPTION</th>
+              <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">UNIT PRICE</th>
+              <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">LINE TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${products
+              .map(
+                (product) => `
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">${product.quantity}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">${product.originalprice}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">${product.price}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    
+      <!-- Totals Section -->
+      <div style="margin-top: 20px; text-align: right;">
+        <p style="margin: 5px 0;"><strong>UNIT TOTAL:</strong> $${products.reduce(
+          (sum, product) => sum + product.originalprice,
+          0
+        )}</p>
+        <p style="margin: 5px 0;"><strong>DELIVERYCHARGE:</strong>30</p>
+        <p style="margin: 5px 0; font-size: 18px;">
+  <strong>TOTAL:</strong> $${(
+    products.reduce((sum, product) => sum + product.price, 0) + 30
+  ).toFixed(2)}
+</p>
 
-  <!-- Header Section -->
-  <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; background-color: #000; color: #fff;">
-    <div>
-      <h1 style="margin: 0; font-size: 24px;">THE HAPPY TOOTH</h1>
-      <p style="margin: 0; font-size: 14px;">Make all checks payable to Utu Linna</p>
-    </div>
-    <div style="text-align: right;">
-      <h3 style="margin: 0;">Invoice #5465</h3>
-      <p style="margin: 0; font-size: 14px;">8/8/2023</p>
-    </div>
-  </div>
-
-  <!-- Customer Information Section -->
-  <div style="margin-top: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-    <table style="width: 100%; border-collapse: collapse;">
-      <tr>
-        <td style="width: 20%; font-weight: bold;">TO</td>
-        <td style="width: 30%;">Utu Linna<br>Kendall Collins DDS</td>
-        <td style="width: 20%; font-weight: bold;">CUSTOMER ID</td>
-        <td style="width: 30%;">ABK967</td>
-      </tr>
-      <tr>
-        <td style="font-weight: bold;">ADDRESS</td>
-        <td>234 5th Ave<br>Madison, WI 12131</td>
-        <td style="font-weight: bold;">PHONE</td>
-        <td>640-555-0146</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- Job Details Section -->
-  <div style="margin-top: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-    <table style="width: 100%; border-collapse: collapse;">
-      <tr>
-        <td style="width: 20%; font-weight: bold;">SALESPERSON</td>
-        <td style="width: 30%;">Jane</td>
-        <td style="width: 20%; font-weight: bold;">JOB</td>
-        <td style="width: 30%;">Dental Instrument Resupply</td>
-      </tr>
-      <tr>
-        <td style="font-weight: bold;">PAYMENT TERMS</td>
-        <td>Due upon receipt</td>
-        <td style="font-weight: bold;">DUE DATE</td>
-        <td>8/8/2023</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- Invoice Items Section -->
-  <div style="margin-top: 20px;">
-    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-      <thead>
-        <tr style="background-color: #f0f0f0;">
-          <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">QTY</th>
-          <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">DESCRIPTION</th>
-          <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">UNIT PRICE</th>
-          <th style="padding: 10px; border: 1px solid #ccc; font-weight: bold;">LINE TOTAL</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #ccc;">100</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">Mouth mirror</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">0.25</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">25</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #ccc;">6</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">Dental drill</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">645.23</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">3871.38</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #ccc;">100</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">Curette</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">0.12</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">12</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #ccc;">25</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">Syringe</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">1.33</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">33.25</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #ccc;">100</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">Periodontal probe</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">0.22</td>
-          <td style="padding: 10px; border: 1px solid #ccc;">22</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Totals Section -->
-  <div style="margin-top: 20px; text-align: right;">
-    <p style="margin: 5px 0;"><strong>SUBTOTAL:</strong> $3,963.63</p>
-    <p style="margin: 5px 0;"><strong>SALES TAX:</strong> 0.06</p>
-    <p style="margin: 5px 0; font-size: 18px;"><strong>TOTAL:</strong> $4,201.45</p>
-  </div>
-
-  <!-- Footer Section -->
-  <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #000; color: #fff;">
-    <div>
-      <p style="margin: 0;">234-555-0126</p>
-      <p style="margin: 0;">happytooth@example.com</p>
-      <p style="margin: 0;">4321 Maplewood Ave | Nashville, TN 13141</p>
-    </div>
-    <div>
-      <h2 style="margin: 0;">THANK YOU</h2>
-    </div>
-  </div>
-
-</body>
-</html>
-    `;
+      </div>
+    
+      <!-- Footer Section -->
+      <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #000; color: #fff;">
+        <div>
+          <p style="margin: 0;">8438434868</p>
+          <p style="margin: 0;">sokkai@example.com</p>
+          <p style="margin: 0;">Pollachi, Coimbatore, Tamil Nadu, India</p>
+        </div>
+        <div>
+          <h2 style="margin: 0;">THANK YOU</h2>
+        </div>
+      </div>
+    
+    </body>
+    </html>
+      `;
 
     const tempDir = os.tmpdir();
     const pdfFilePath = path.join(tempDir, "invoice.pdf");

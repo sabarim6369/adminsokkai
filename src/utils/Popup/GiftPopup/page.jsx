@@ -12,13 +12,12 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     photo: null,
     name: "",
     price: "",
-    oldImage: "", // To store the old image URL
-    oldPublicId: "", // To store the old image public_id
+    oldImage: "", 
+    oldPublicId: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [preview, setPreview] = useState("");
 
-  // Fetch existing gifts
   const fetchGifts = async () => {
     try {
       const response = await axios.get("/api/gift");
