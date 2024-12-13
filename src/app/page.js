@@ -18,7 +18,7 @@ export default function Home() {
 
         if (decoded.exp && decoded.exp > currentTime) {
           setIsAuthenticated(true);
-          // router.push("/frontend/admin/Product");
+          router.push("/frontend/admin/Product");
         } else {
           throw new Error("Token expired");
         }
@@ -33,7 +33,6 @@ export default function Home() {
   }, []);
 
   return (
-    // <div>{isAuthenticated ? <ProductsPage /> : <Signup onOpen={true} />}</div>
-    <Signup onOpen={true} />
+    <div>{isAuthenticated ? <ProductsPage /> : <Signup onOpen={true} />}</div>
   );
 }
