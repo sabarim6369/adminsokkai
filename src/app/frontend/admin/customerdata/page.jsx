@@ -44,7 +44,14 @@ const Clients = () => {
         }}
       >
         <ClipLoader color="#4A90E2" size={100} /> {/* Increased size */}
-        <p style={{ fontWeight: "bold", fontSize: "20px", marginTop: "20px" }}>
+        <p
+          style={{
+            fontWeight: "bold",
+            color: "black",
+            fontSize: "20px",
+            marginTop: "20px",
+          }}
+        >
           Loading, please wait...
         </p>
       </div>

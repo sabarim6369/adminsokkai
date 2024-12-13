@@ -1,10 +1,10 @@
 "use client";
-import { data } from "autoprefixer";
 import axios from "axios";
 import { useEffect, useState } from "react";
-
+import { ClipLoader } from "react-spinners";
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  const [loading, setloading] = useState(true);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   useEffect(() => {
@@ -12,7 +12,6 @@ export default function AdminOrders() {
       try {
         const response = await axios.get("/api/customer/orderdata");
 
-        // Process all users and their purchase histories
         const data = response.data.users.flatMap((user) =>
           user.purchaseHistory.map((order) => ({
             id: order._id,
@@ -42,6 +41,8 @@ export default function AdminOrders() {
         console.log("Consoling the order status for the UI:", data);
       } catch (error) {
         console.error("Error fetching orders:", error);
+      } finally {
+        setloading(false);
       }
     };
 
@@ -92,7 +93,33 @@ export default function AdminOrders() {
       }
     }
   };
-
+  if (loading) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Centers it vertically on the page
+          flexDirection: "column",
+        }}
+      >
+        <ClipLoader color="#4A90E2" size={100} /> {/* Increased size */}
+        <p
+          style={{
+            fontWeight: "bold",
+            color: "black",
+            fontSize: "20px",
+            marginTop: "20px",
+          }}
+        >
+          Loading, please wait...
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <h1 className="font-bold mb-4 text-gray-800 text-center text-xl">

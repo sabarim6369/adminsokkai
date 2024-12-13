@@ -4,11 +4,13 @@ import SideBar from "@/utils/SideBar/page";
 import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
+import { ClipLoader } from "react-spinners";
 import Updateform from "@/utils/Popup/UpdateForm/page";
 import { ToastContainer, toast } from "react-toastify";
 const ProductsPage = () => {
   const [products, setproduct] = useState([]);
   const [greeting, setGreeting] = useState("");
+  const [loading, setloading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [confirmName, setConfirmName] = useState("");
@@ -28,6 +30,8 @@ const ProductsPage = () => {
       setproduct(response.data);
     } catch (error) {
       toast.error("Failed to fetch the product!");
+    } finally {
+      setloading(false);
     }
   };
 
@@ -70,7 +74,33 @@ const ProductsPage = () => {
     setSelectedProduct(null);
     setConfirmName("");
   };
-
+  if (loading) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Centers it vertically on the page
+          flexDirection: "column",
+        }}
+      >
+        <ClipLoader color="#4A90E2" size={100} /> {/* Increased size */}
+        <p
+          style={{
+            fontWeight: "bold",
+            color: "black",
+            fontSize: "20px",
+            marginTop: "20px",
+          }}
+        >
+          Loading, please wait...
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="relative">
       <ToastContainer />

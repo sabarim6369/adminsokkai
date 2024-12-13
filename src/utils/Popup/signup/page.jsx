@@ -1,12 +1,11 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./signup.css";
 import { FaTimes } from "react-icons/fa";
-
+import { useRouter } from "next/navigation";
 const Signup = ({ onOpen, onClose }) => {
   const [formData, setFormData] = useState({
     email: "",
@@ -30,7 +29,7 @@ const Signup = ({ onOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const endpoint = isLogin ? "/api/Login" : "/api/Auth";
+      const endpoint = isLogin ? "/api/Auth/Login" : "/api/Auth";
       const response = await axios.post(endpoint, formData);
 
       const { token } = response.data;
@@ -41,9 +40,11 @@ const Signup = ({ onOpen, onClose }) => {
       );
 
       setTimeout(() => {
-        router.back();
+        router.push("/frontend/admin/Product");
       }, 2000);
     } catch (err) {
+      // router.push("/frontend/admin/Product");
+
       console.error("Error:", err);
       const errorMessage = err.response?.data?.error || err.message;
       toast.error(errorMessage);
@@ -71,7 +72,10 @@ const Signup = ({ onOpen, onClose }) => {
               </button>
             </p>
 
-            <form className="signup-form xl:w-96 w-80  md:w-96" onSubmit={handleSubmit}>
+            <form
+              className="signup-form xl:w-96 w-80  md:w-96"
+              onSubmit={handleSubmit}
+            >
               <div className="form-group">
                 <input
                   type="email"
