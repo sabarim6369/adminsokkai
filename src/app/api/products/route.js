@@ -3,29 +3,43 @@ import Product from "../Model/Product";
 import dotenv from "dotenv";
 import connectMongoDB from "../Connection";
 dotenv.config();
+
+// Cloudinary Configuration
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Function to upload image to Cloudinary
 const uploadToCloudinary = async (file) => {
-  const result = await cloudinary.v2.uploader.upload(file, {
-    folder: "ecommerce/products",
-  });
-  return { url: result.secure_url, public_id: result.public_id };
+  try {
+    const result = await cloudinary.v2.uploader.upload(file, {
+      folder: "ecommerce/products",
+    });
+    return { url: result.secure_url, public_id: result.public_id };
+  } catch (error) {
+    console.error("Error uploading to Cloudinary:", error);
+    throw new Error("Failed to upload image to Cloudinary");
+  }
 };
 
+// Function to delete image from Cloudinary
 const deleteFromCloudinary = async (public_id) => {
-  await cloudinary.v2.uploader.destroy(public_id);
+  try {
+    await cloudinary.v2.uploader.destroy(public_id);
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
+    throw new Error("Failed to delete image from Cloudinary");
+  }
 };
-export async function POST(request) {
-  await connectMongoDB();
 
-  console.log("data passed");
+// Main POST request handler
+export async function POST(request) {
+  await connectMongoDB(); // Ensure database connection
 
   try {
-    // Parse the form data
+    // Parse form data
     const form = await request.formData();
 
     const name = form.get("name");
@@ -37,9 +51,10 @@ export async function POST(request) {
     const stock = form.get("stock");
     const brand = form.get("brand");
 
+    // Get uploaded images
     const files = form.getAll("images");
 
-    // Log all form data entries for debugging
+    // Log form entries for debugging
     for (let [key, value] of form.entries()) {
       console.log(`${key}:`, value);
     }
@@ -51,14 +66,27 @@ export async function POST(request) {
       });
     }
 
+    // Upload images to Cloudinary
     const images = await Promise.all(
       files.map(async (file) => {
         const buffer = await file.arrayBuffer();
         const base64 = Buffer.from(buffer).toString("base64");
-        return await uploadToCloudinary(`data:${file.type};base64,${base64}`);
+        try {
+          return await uploadToCloudinary(`data:${file.type};base64,${base64}`);
+        } catch (uploadError) {
+          return { error: uploadError.message }; // Handle individual file upload failures
+        }
       })
     );
-    console.log("consoling the cloud url : ",images);
+
+    const successfulImages = images.filter((image) => !image.error);
+    if (successfulImages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "All image uploads failed" }),
+        { status: 400 }
+      );
+    }
+
     const newProduct = new Product({
       name,
       sizes,
@@ -68,20 +96,21 @@ export async function POST(request) {
       category,
       stock,
       brand,
-      images,
+      images: successfulImages, 
     });
-
-  
     const savedProduct = await newProduct.save();
-    console.log("consoling the saved product : ",savedProduct);    
+
+    console.log("Saved product:", savedProduct);
     return new Response(JSON.stringify(savedProduct), { status: 201 });
   } catch (error) {
     console.error("Error while creating product:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-    });
+    return new Response(
+      JSON.stringify({ error: error.message || "Something went wrong" }),
+      { status: 400 }
+    );
   }
 }
+
 export async function GET() {
   await connectMongoDB();
 
