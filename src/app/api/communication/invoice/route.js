@@ -135,12 +135,10 @@ export async function POST(request) {
     </body>
     </html>
       `;
-
     const tempDir = os.tmpdir();
     const pdfFilePath = path.join(tempDir, "invoice.pdf");
     const imageFilePath = path.join(tempDir, "invoice_thumbnail.png");
 
-    // Create PDF from HTML
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setContent(htmlContent);
@@ -151,14 +149,11 @@ export async function POST(request) {
       margin: { top: "20mm", right: "10mm", bottom: "20mm", left: "10mm" },
     });
     await browser.close();
-
     if (fs.existsSync(pdfFilePath)) {
       console.log(`PDF created successfully at ${pdfFilePath}`);
     } else {
       console.log("PDF creation failed. File not found.");
     }
-
-    // Generate an image (screenshot) of the PDF
     const imageBrowser = await puppeteer.launch();
     const imagePage = await imageBrowser.newPage();
     await imagePage.setContent(htmlContent);
@@ -167,13 +162,11 @@ export async function POST(request) {
       fullPage: true,
     });
     await imageBrowser.close();
-
     if (fs.existsSync(imageFilePath)) {
       console.log(`Image preview created successfully at ${imageFilePath}`);
     } else {
       console.log("Image creation failed. File not found.");
     }
-
     const uploadImageResponse = await cloudinary.v2.uploader.upload(
       imageFilePath,
       {

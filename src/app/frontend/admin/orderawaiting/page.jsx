@@ -66,7 +66,6 @@ export default function AdminOrders() {
           (order) => order.id === selectedOrderId
         );
         const userId = selectedOrder.userId;
-
         console.log("Status of the product:", newStatus);
         console.log("Selected order ID:", selectedOrderId);
         console.log("User ID:", userId);

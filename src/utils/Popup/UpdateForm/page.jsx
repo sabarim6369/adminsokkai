@@ -139,7 +139,6 @@ const UpdateProductForm = ({ product, value, onClose }) => {
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Product Name */}
             <div>
               <label className="block text-black font-medium mb-2">
                 Product Name
@@ -148,6 +147,32 @@ const UpdateProductForm = ({ product, value, onClose }) => {
                 type="text"
                 name="name"
                 value={formData.name}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-black font-medium mb-2">
+                Product actual price
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.price}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-black font-medium mb-2">
+                originalprice
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.originalprice}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                 required
@@ -162,6 +187,19 @@ const UpdateProductForm = ({ product, value, onClose }) => {
               <textarea
                 name="description"
                 value={formData.description}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                rows="3"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-black font-medium mb-2">
+                category
+              </label>
+              <textarea
+                name="description"
+                value={formData.category}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                 rows="3"

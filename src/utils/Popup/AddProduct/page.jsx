@@ -1,11 +1,10 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { FaUpload, FaCheck, FaTimes } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-
+import { ClipLoader } from "react-spinners";
 const AddProductForm = ({ value, onClose }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -26,16 +25,27 @@ const AddProductForm = ({ value, onClose }) => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setFormData({ ...formData, images: [...formData.images, ...files] });
+
+    if (formData.images.length + files.length > 4) {
+      toast.error("You can only upload up to 4 images.");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      images: [...prev.images, ...files].slice(0, 4),
+    }));
   };
 
   const handleRemoveFile = (index) => {
     const updatedImages = formData.images.filter((_, i) => i !== index);
     setFormData({ ...formData, images: updatedImages });
   };
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start the loader
     try {
       const endpoint = "/api/products";
       const data = new FormData();
@@ -48,16 +58,14 @@ const AddProductForm = ({ value, onClose }) => {
       data.append("sizes", JSON.stringify(formData.sizes));
       data.append("brand", formData.brand);
       formData.images.forEach((file) => data.append("images", file));
-      for (let [key, value] of data.entries()) {
-        console.log(`${key}:`, value);
-      }
 
       const config = {
         headers: { "Content-Type": "multipart/form-data" },
       };
 
+      console.log("Submitting data...");
       const response = await axios.post(endpoint, data, config);
-      console.log("response status : ", response);
+
       if (response.status === 201) {
         toast.success("Product added successfully!");
         setTimeout(() => {
@@ -77,6 +85,8 @@ const AddProductForm = ({ value, onClose }) => {
       } else {
         toast.error("Network error. Please check your connection.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,7 +116,14 @@ const AddProductForm = ({ value, onClose }) => {
   };
 
   return (
-    value && (
+    <div className="relative">
+      {/* Overlay and Loader */}
+      {loading && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+          <ClipLoader color="#ffffff" size={50} />
+        </div>
+      )}
+      value && (
       <div className="bg-gray-600 bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
         <ToastContainer />{" "}
         <div className="bg-white shadow-lg rounded-lg w-full max-w-3xl p-8 h-96 overflow-y-auto">
@@ -186,16 +203,37 @@ const AddProductForm = ({ value, onClose }) => {
               <label className="block text-gray-700 font-medium mb-2">
                 Category
               </label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter product category"
-                required
-              />
+              <div className="flex flex-wrap gap-4">
+                {[
+                  "Shirts",
+                  "T-Shirts",
+                  "Track Pants",
+                  "Shorts",
+                  "Inner Wears",
+                  "Shoes",
+                  "Accessories",
+                ].map((category) => (
+                  <label key={category} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="category"
+                      value={category}
+                      checked={formData.category === category}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                        }))
+                      }
+                      className="form-radio text-indigo-600"
+                      required
+                    />
+                    <span className="text-gray-700">{category}</span>
+                  </label>
+                ))}
+              </div>
             </div>
+
             {/* Size Selection */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
@@ -337,7 +375,7 @@ const AddProductForm = ({ value, onClose }) => {
           </form>
         </div>
       </div>
-    )
+    </div>
   );
 };
 

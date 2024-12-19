@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./signup.css";
 import { FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+
 const Signup = ({ onOpen, onClose }) => {
   const [formData, setFormData] = useState({
     email: "",
@@ -33,7 +35,7 @@ const Signup = ({ onOpen, onClose }) => {
       const response = await axios.post(endpoint, formData);
 
       const { token } = response.data;
-      localStorage.setItem("authToken", token);
+      Cookies.set("authToken", token);
 
       toast.success(
         isLogin ? "Logged in successfully!" : "Account created successfully!"
@@ -43,8 +45,6 @@ const Signup = ({ onOpen, onClose }) => {
         router.push("/frontend/admin/Product");
       }, 2000);
     } catch (err) {
-      // router.push("/frontend/admin/Product");
-
       console.error("Error:", err);
       const errorMessage = err.response?.data?.error || err.message;
       toast.error(errorMessage);
