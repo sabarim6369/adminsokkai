@@ -2,6 +2,7 @@ import connectMongoDB from "../Connection";
 import jwt from "jsonwebtoken";
 import User from "../Model/Authentication";
 export async function POST(request) {
+  console.log("jwt token value :", process.env.JWT_SECRET);
   await connectMongoDB();
 
   try {
