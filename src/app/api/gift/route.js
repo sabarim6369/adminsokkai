@@ -14,16 +14,11 @@ cloudinary.v2.config({
 export async function POST(request) {
   await connectMongoDB();
 
-  console.log("data passed");
   try {
     const form = await request.formData();
     const name = form.get("name");
     const price = form.get("price");
     const files = form.getAll("images");
-
-    for (let [key, value] of form.entries()) {
-      console.log(`${key}:`, value);
-    }
 
     if (!files || files.length === 0) {
       return Response.json(
@@ -40,7 +35,6 @@ export async function POST(request) {
           `data:${file.type};base64,${base64}`
         );
 
-        console.log("Image uploaded:", uploadedImage);
         return {
           url: uploadedImage.url,
           public_id: uploadedImage.public_id,
@@ -48,27 +42,26 @@ export async function POST(request) {
       })
     );
 
-    console.log("Consoling the images URLs stored in the cloud:", images);
-
     const newProduct = new gifts({
       photos: images,
       name,
       price,
+      // status: "active",
     });
 
     const savedProduct = await newProduct.save();
-    console.log("Saved product:", savedProduct);
 
     return Response.json(savedProduct, { status: 201 });
   } catch (error) {
-    console.error("Error saving product:", error);
     return Response.json({ error: error.message }, { status: 400 });
   }
 }
+
 export async function PATCH(request) {
   try {
-    const { id, name, price, photo, oldPhotoPublicId } = await request.json();
-    const updateData = { name, price };
+    const { id, name, price, photo, oldPhotoPublicId, status } =
+      await request.json();
+    const updateData = { name, price, status };
 
     if (photo) {
       const uploadResponse = await axios.post(
@@ -83,9 +76,7 @@ export async function PATCH(request) {
       if (!uploadResponse.data.secure_url || !uploadResponse.data.public_id) {
         return new Response(
           JSON.stringify({ error: "Failed to upload photo" }),
-          {
-            status: 500,
-          }
+          { status: 500 }
         );
       }
 
@@ -119,7 +110,6 @@ export async function PATCH(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error(error);
     return new Response(JSON.stringify({ error: "Error updating gift" }), {
       status: 500,
     });
@@ -127,35 +117,37 @@ export async function PATCH(request) {
 }
 
 export async function DELETE(request) {
+  console.log("Request URL: ", request.url);
+  const url = request.url;
+  let fullUrl = url;
   try {
-    const { id } = new URL(request.url).searchParams;
+    const { searchParams } = new URL(fullUrl);
+    const id = searchParams.get("id");
+    console.log("id reached : ", id);
+    console.log("endpoint reached");
+
     const giftToDelete = await gifts.findById(id);
-  
+
     if (!giftToDelete) {
+      console.log("gift not found in console");
       return new Response(JSON.stringify({ error: "Gift not found" }), {
         status: 404,
       });
     }
 
-    if (giftToDelete.photos && giftToDelete.photos.length > 0) {
-      const public_id = giftToDelete.photos[0].public_id;
-      await deleteFromCloudinary(public_id);
-    }
-
-    await gifts.findByIdAndDelete(id);
+    giftToDelete.status = "disabled";
+    await giftToDelete.save();
 
     return new Response(
-      JSON.stringify({ message: "Gift deleted successfully" }),
+      JSON.stringify({ message: "Gift marked as disabled successfully" }),
       { status: 200 }
     );
   } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: "Error deleting gift" }), {
+    return new Response(JSON.stringify({ error: "Error disabling gift" }), {
       status: 500,
     });
   }
 }
-
 export async function GET(request) {
   try {
     const giftsList = await gifts.find();
@@ -166,7 +158,6 @@ export async function GET(request) {
     });
   }
 }
-
 const uploadToCloudinary = async (file) => {
   const result = await cloudinary.v2.uploader.upload(file, {
     folder: "ecommerce/products",

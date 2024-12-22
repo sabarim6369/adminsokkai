@@ -39,7 +39,6 @@ export async function POST(request) {
   await connectMongoDB(); // Ensure database connection
 
   try {
-    // Parse form data
     const form = await request.formData();
 
     const name = form.get("name");
@@ -50,23 +49,16 @@ export async function POST(request) {
     const category = form.get("category");
     const stock = form.get("stock");
     const brand = form.get("brand");
+    const giftId = form.get("selectedGift");
 
-    // Get uploaded images
     const files = form.getAll("images");
 
-    // Log form entries for debugging
-    for (let [key, value] of form.entries()) {
-      console.log(`${key}:`, value);
-    }
-
-    // Validate if files were uploaded
     if (!files || files.length === 0) {
       return new Response(JSON.stringify({ error: "No files were uploaded" }), {
         status: 400,
       });
     }
 
-    // Upload images to Cloudinary
     const images = await Promise.all(
       files.map(async (file) => {
         const buffer = await file.arrayBuffer();
@@ -74,7 +66,7 @@ export async function POST(request) {
         try {
           return await uploadToCloudinary(`data:${file.type};base64,${base64}`);
         } catch (uploadError) {
-          return { error: uploadError.message }; // Handle individual file upload failures
+          return { error: uploadError.message };
         }
       })
     );
@@ -96,7 +88,8 @@ export async function POST(request) {
       category,
       stock,
       brand,
-      images: successfulImages, 
+      images: successfulImages,
+      selectedGift: giftId,
     });
     const savedProduct = await newProduct.save();
 

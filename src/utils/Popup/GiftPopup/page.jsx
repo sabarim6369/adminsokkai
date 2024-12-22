@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-toastify"; // Import the toast functionality
-import "react-toastify/dist/ReactToastify.css"; // Import the styles for the toast
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const GiftVoucherPopup = ({ value, onClose }) => {
   const [gifts, setGifts] = useState([]);
@@ -12,28 +12,29 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     photo: null,
     name: "",
     price: "",
-    oldImage: "", 
+    oldImage: "",
     oldPublicId: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [preview, setPreview] = useState("");
 
+  // Fetch gifts from the server
   const fetchGifts = async () => {
     try {
       const response = await axios.get("/api/gift");
-      console.log("Gift response from the server: ", response);
       setGifts(response.data);
     } catch (error) {
       console.error("Error fetching gifts:", error);
+      toast.error("Failed to fetch gift vouchers.");
     }
   };
 
   useEffect(() => {
     if (value) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"; // Disable scroll
       fetchGifts();
     } else {
-      document.body.style.overflow = "";
+      document.body.style.overflow = ""; // Enable scroll
     }
 
     return () => {
@@ -41,58 +42,44 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     };
   }, [value]);
 
-  // Handle form submission for Add or Update
+  // Handle form submission for Add
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Create a new FormData object
       const formDataObj = new FormData();
       formDataObj.append("name", formData.name);
       formDataObj.append("price", formData.price);
-      formDataObj.append("id", formData.id); // Send the _id if editing
 
-      // If there's a photo and it's different from the old image, delete the old one first
+      if (formData.id) formDataObj.append("id", formData.id); // Ensure ID is sent for update
+
+      // If there's a new photo, append it to the form data
       if (formData.photo && formData.photo !== formData.oldImage) {
-        await deleteImageFromCloudinary(formData.oldPublicId);
+        await deleteImageFromCloudinary(formData.oldPublicId); // Delete the old image first
       }
 
-      // If there's a new photo, append it
       if (formData.photo) {
-        formDataObj.append("images", formData.photo); // 'images' is the field name expected in your backend
+        formDataObj.append("images", formData.photo);
       } else {
-        // If no new photo, keep the old one
         formDataObj.append("oldImage", formData.oldImage);
         formDataObj.append("oldPublicId", formData.oldPublicId);
       }
 
-      // If editing, send a PATCH request; otherwise, POST request
-      if (isEditing) {
-        const response = await axios.patch("/api/gift", formDataObj, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        console.log("response data :", response);
-        toast.success("Gift updated successfully!");
-      } else {
-        const response = await axios.post("/api/gift", formDataObj, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        console.log("Gift response from the server:", response);
-        toast.success("Gift added successfully!");
-      }
+      // Make the request (POST for new gift)
+      await axios.post("/api/gift", formDataObj, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
+      toast.success("Gift added successfully!");
       resetForm();
       fetchGifts();
     } catch (error) {
       console.error("Error saving gift:", error);
-      toast.error("Error saving gift!");
+      toast.error("Error saving gift voucher.");
     }
   };
 
+  // Handle file selection and preview
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setPreview(URL.createObjectURL(file));
@@ -100,10 +87,9 @@ const GiftVoucherPopup = ({ value, onClose }) => {
   };
 
   // Delete image from Cloudinary
-  const deleteImageFromCloudinary = async (public_id) => {
+  const deleteImageFromCloudinary = async (publicId) => {
     try {
-      await axios.delete(`/api/gift/delete-image?public_id=${public_id}`);
-      console.log("Image deleted successfully from Cloudinary.");
+      await axios.delete(`/api/gift/delete-image?public_id=${publicId}`);
     } catch (error) {
       console.error("Error deleting image:", error);
     }
@@ -111,25 +97,15 @@ const GiftVoucherPopup = ({ value, onClose }) => {
 
   // Handle delete action
   const handleDelete = async (id) => {
+    console.log("id : ", id);
     try {
       await axios.delete(`/api/gift?id=${id}`);
       fetchGifts();
       toast.success("Gift deleted successfully!");
     } catch (error) {
       console.error("Error deleting gift:", error);
-      toast.error("Error deleting gift!");
+      toast.error("Error deleting gift voucher.");
     }
-  };
-
-  // Handle edit action
-  const handleEdit = (gift) => {
-    setFormData({
-      ...gift,
-      photo: null,
-      oldImage: gift.photos[0]?.url,
-      oldPublicId: gift.photos[0]?.public_id,
-    });
-    setIsEditing(true);
   };
 
   // Reset form
@@ -145,6 +121,9 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     setIsEditing(false);
     setPreview("");
   };
+
+  // Check if gift is disabled
+  const isDisabled = (gift) => gift.disabled;
 
   return (
     value && (
@@ -176,7 +155,12 @@ const GiftVoucherPopup = ({ value, onClose }) => {
               </thead>
               <tbody>
                 {gifts.map((gift) => (
-                  <tr key={gift.id} className="hover:bg-gray-50">
+                  <tr
+                    key={gift.id}
+                    className={`hover:bg-gray-50 ${
+                      isDisabled(gift) ? "bg-gray-300" : ""
+                    }`}
+                  >
                     <td className="py-2">
                       <img
                         src={gift.photos[0]?.url}
@@ -187,18 +171,14 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                     <td className="py-2">{gift.name}</td>
                     <td className="py-2">₹{gift.price}</td>
                     <td className="py-2 text-right space-x-2">
-                      <button
-                        onClick={() => handleEdit(gift)}
-                        className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(gift.id)}
-                        className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
+                      {!isDisabled(gift) && (
+                        <button
+                          onClick={() => handleDelete(gift._id)}
+                          className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -206,7 +186,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
             </table>
           </div>
 
-          {/* Add/Edit Form */}
+          {/* Add Form */}
           <div className="p-6 border-t">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -269,7 +249,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                   type="submit"
                   className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700"
                 >
-                  {isEditing ? "Update Gift" : "Add Gift"}
+                  Add Gift
                 </button>
               </div>
             </form>

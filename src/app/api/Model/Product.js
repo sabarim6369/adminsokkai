@@ -48,6 +48,9 @@ const productSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    selectedGift: {
+      type: String,
+    },
     brand: {
       type: String,
       required: true,

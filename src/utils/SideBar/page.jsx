@@ -85,7 +85,13 @@ const SideBar = () => {
                 className="flex items-center gap-4 p-3 text-white rounded-lg hover:bg-purple-700"
               >
                 <FaHome className="text-xl" />
-                <span className="text-xl" onClick={ToggleGiftVoucher}>
+                <span
+                  className="text-xl"
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent page reload
+                    ToggleGiftVoucher(); // Your existing toggle logic
+                  }}
+                >
                   {" "}
                   Add Gifts
                 </span>
@@ -175,7 +181,6 @@ const SideBar = () => {
         onOpen={signuppopup}
         onClose={() => setsignuppopup(!signuppopup)}
       />
-       
     </div>
   );
 };
