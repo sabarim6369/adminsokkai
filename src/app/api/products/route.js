@@ -4,14 +4,11 @@ import dotenv from "dotenv";
 import connectMongoDB from "../Connection";
 dotenv.config();
 
-// Cloudinary Configuration
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-// Function to upload image to Cloudinary
 const uploadToCloudinary = async (file) => {
   try {
     const result = await cloudinary.v2.uploader.upload(file, {
@@ -24,7 +21,6 @@ const uploadToCloudinary = async (file) => {
   }
 };
 
-// Function to delete image from Cloudinary
 const deleteFromCloudinary = async (public_id) => {
   try {
     await cloudinary.v2.uploader.destroy(public_id);
@@ -33,19 +29,18 @@ const deleteFromCloudinary = async (public_id) => {
     throw new Error("Failed to delete image from Cloudinary");
   }
 };
-
-// Main POST request handler
 export async function POST(request) {
-  await connectMongoDB(); // Ensure database connection
+  await connectMongoDB();
 
   try {
     const form = await request.formData();
-
     const name = form.get("name");
     const originalprice = form.get("originalprice");
     const description = form.get("description");
     const price = form.get("price");
     const sizes = form.get("sizes");
+    const color = form.get("color");
+
     const category = form.get("category");
     const stock = form.get("stock");
     const brand = form.get("brand");
@@ -58,7 +53,7 @@ export async function POST(request) {
         status: 400,
       });
     }
-
+    console.log("form data raw : ", form);
     const images = await Promise.all(
       files.map(async (file) => {
         const buffer = await file.arrayBuffer();
@@ -82,6 +77,7 @@ export async function POST(request) {
     const newProduct = new Product({
       name,
       sizes,
+      color,
       originalprice,
       description,
       price,
@@ -91,6 +87,7 @@ export async function POST(request) {
       images: successfulImages,
       selectedGift: giftId,
     });
+    console.log("new products : ", newProduct);
     const savedProduct = await newProduct.save();
 
     console.log("Saved product:", savedProduct);
@@ -126,6 +123,7 @@ export async function PUT(request) {
     const form = await request.formData();
 
     const name = form.get("name");
+    const color = JSON.parse(form.get("color") || "[]");
     const originalprice = form.get("originalprice");
     const description = form.get("description");
     const price = form.get("price");
@@ -197,6 +195,7 @@ export async function PUT(request) {
       stock,
       sizes,
       brand,
+
       images: updatedImages,
       updatedAt: Date.now(),
     };
@@ -226,19 +225,17 @@ export async function DELETE(request) {
     const id = url.searchParams.get("id");
     console.log("id destructureing form the db : ", url, id);
 
-    const product = await Product.findByIdAndDelete(id);
+    const product = await Product.findById(id);
 
     if (!product) {
       return Response.json({ error: "Product not found" }, { status: 404 });
     }
-    await Promise.all(
-      product.images.map(async (image) => {
-        await deleteFromCloudinary(image.public_id);
-      })
-    );
+
+    product.status = "inactive";
+    await product.save();
 
     return Response.json(
-      { message: "Product deleted successfully" },
+      { message: "Product status updated to inactive successfully" },
       { status: 200 }
     );
   } catch (error) {

@@ -17,6 +17,10 @@ const reviewSchema = new mongoose.Schema(
 
 const productSchema = new mongoose.Schema(
   {
+    status: {
+      type: String,
+      default: "active",
+    },
     name: {
       type: String,
       required: true,
@@ -54,6 +58,9 @@ const productSchema = new mongoose.Schema(
     brand: {
       type: String,
       required: true,
+    },
+    color: {
+      type: [String],
     },
     images: [
       {

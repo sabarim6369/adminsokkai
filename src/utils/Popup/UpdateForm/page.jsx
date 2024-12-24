@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const UpdateProductForm = ({ product, value, onClose }) => {
+  console.log("consoling the product : ", product);
   const [formData, setFormData] = useState({
     name: product.name || "",
     originalprice: product.originalprice || "",
@@ -19,14 +20,11 @@ const UpdateProductForm = ({ product, value, onClose }) => {
     images: product.images || [],
     newImages: [],
   });
-
-  // Handles form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handles file input changes
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     console.log("Selected files:", files);
@@ -39,8 +37,6 @@ const UpdateProductForm = ({ product, value, onClose }) => {
       });
     }
   };
-
-  // Handles image removal
   const handleRemoveImage = (index, type) => {
     if (type === "existing") {
       const updatedImages = formData.images.filter((_, i) => i !== index);
@@ -55,8 +51,6 @@ const UpdateProductForm = ({ product, value, onClose }) => {
     try {
       const endpoint = `/api/products?id=${product._id}`;
       const data = new FormData();
-
-      // Append text fields to FormData
       data.append("name", formData.name);
       data.append("description", formData.description);
       data.append("price", formData.price);
@@ -65,8 +59,6 @@ const UpdateProductForm = ({ product, value, onClose }) => {
       data.append("stock", formData.stock);
       data.append("brand", formData.brand);
       data.append("sizes", JSON.stringify(formData.sizes));
-
-      // Add all existing images (public IDs)
       if (formData.images && formData.images.length > 0) {
         const existingImagePublicIds = formData.images.map(
           (img) => img.public_id
@@ -75,11 +67,9 @@ const UpdateProductForm = ({ product, value, onClose }) => {
       } else {
         data.append("sentImages", JSON.stringify([]));
       }
-
-      // Add all new images
       if (formData.newImages && formData.newImages.length > 0) {
         formData.newImages.forEach((file) => {
-          data.append("images", file); // Backend expects `images` as the key
+          data.append("images", file);
         });
       }
 
@@ -179,7 +169,6 @@ const UpdateProductForm = ({ product, value, onClose }) => {
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-black font-medium mb-2">
                 Description
@@ -192,6 +181,90 @@ const UpdateProductForm = ({ product, value, onClose }) => {
                 rows="3"
                 required
               />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {["S", "M", "L", "XL"].map((size) => (
+                <div key={size} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={size}
+                    name="sizes"
+                    value={size}
+                    checked={formData.sizes[0].includes(size)}
+                    onChange={(e) => {
+                      const { value } = e.target;
+                      const sizes = formData.sizes;
+                      if (sizes.includes(value)) {
+                        setFormData({
+                          ...formData,
+                          sizes: sizes.filter((item) => item !== value),
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          sizes: [...sizes, value],
+                        });
+                      }
+                    }}
+                    className="w-4 h-4 text-indigo-500 border-gray-300 rounded focus:ring-indigo-400"
+                  />
+                  <label htmlFor={size} className="ml-2 text-gray-800">
+                    {size}
+                  </label>
+                </div>
+              ))}
+            </div>
+            <div>
+              <label className="block text-red-600 font-bold mb-2">
+                Color Available
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  "White",
+                  "Black",
+                  "Blue",
+                  "Gray",
+                  "Red",
+                  "Green",
+                  "Pink",
+                  "Yellow",
+                  "Brown",
+                  "Purple",
+                  "Orange",
+                  "Burgundy",
+                  "Teal",
+                  "nocolor",
+                ].map((size) => (
+                  <div key={size} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={size}
+                      name="sizes"
+                      value={size}
+                      checked={formData.sizes?.includes(size)}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        const sizes = formData.sizes || [];
+                        if (sizes.includes(value)) {
+                          setFormData({
+                            ...formData,
+                            sizes: sizes.filter((item) => item !== value),
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            sizes: [...sizes, value],
+                          });
+                        }
+                      }}
+                      className="w-4 h-4 text-indigo-500 border-gray-300 rounded focus:ring-indigo-400"
+                    />
+                    <label htmlFor={size} className="ml-2 text-gray-800">
+                      {size}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-black font-medium mb-2">

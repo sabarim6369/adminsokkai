@@ -32,7 +32,6 @@ const Stockavailability = ({ value, onClose }) => {
     value && (
       <div className="bg-gray-600 bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
         <div className="bg-white h-auto max-h-[80vh] rounded-lg shadow-lg w-[90%] sm:w-11/12 md:w-9/12 lg:w-1/2 xl:w-[30%]">
-        
           <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
               Product Availability
@@ -47,11 +46,13 @@ const Stockavailability = ({ value, onClose }) => {
           <div className="overflow-y-auto max-h-[60vh]">
             {products.map((elem) => (
               <div
-                className="p-4 sm:p-6 border-b flex items-center space-x-4"
+                className={`p-4 sm:p-6 border-b flex items-center space-x-4 ${
+                  elem.status === "inactive" ? "bg-red-100 border-red-300" : "" // Apply light red background and border for inactive products
+                }`}
                 key={elem.id || elem.name}
               >
                 <img
-                  src={elem.images?.[0]?.url}
+                  src={elem.images?.[0]?.url || "/placeholder-image.png"} // Provide a placeholder image in case the image URL is missing
                   alt={elem.name}
                   className="w-16 h-16 object-cover rounded-lg border"
                 />
@@ -75,6 +76,7 @@ const Stockavailability = ({ value, onClose }) => {
               </div>
             ))}
           </div>
+
           <div className="px-4 sm:px-6 py-4 border-t flex justify-end">
             <button
               onClick={onClose}

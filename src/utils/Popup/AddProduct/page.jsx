@@ -17,6 +17,7 @@ const AddProductForm = ({ value, onClose }) => {
     brand: "",
     sizes: [],
     images: [],
+    color: [],
     selectedGift: null,
   });
 
@@ -75,13 +76,14 @@ const AddProductForm = ({ value, onClose }) => {
       data.append("stock", formData.stock);
       data.append("sizes", JSON.stringify(formData.sizes));
       data.append("brand", formData.brand);
-      data.append("selectedGift", formData.selectedGift); // Append selected gift's _id
+      data.append("color", formData.color);
+      data.append("selectedGift", formData.selectedGift);
       formData.images.forEach((file) => data.append("images", file));
 
       const config = {
         headers: { "Content-Type": "multipart/form-data" },
       };
-
+      console.log("passing the data : ", data);
       const response = await axios.post(endpoint, data, config);
 
       if (response.status === 201) {
@@ -118,8 +120,9 @@ const AddProductForm = ({ value, onClose }) => {
       stock: "",
       brand: "",
       sizes: [],
+      color: [],
       images: [],
-      selectedGift: null, // Reset gift selection
+      selectedGift: null,
     });
   };
 
@@ -166,7 +169,7 @@ const AddProductForm = ({ value, onClose }) => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Product Name */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Product Name
                 </label>
                 <input
@@ -182,7 +185,7 @@ const AddProductForm = ({ value, onClose }) => {
 
               {/* Description */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Description
                 </label>
                 <textarea
@@ -196,7 +199,7 @@ const AddProductForm = ({ value, onClose }) => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Original Price ($)
                 </label>
                 <input
@@ -228,7 +231,7 @@ const AddProductForm = ({ value, onClose }) => {
 
               {/* Category */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Category
                 </label>
                 <div className="flex flex-wrap gap-4">
@@ -264,7 +267,7 @@ const AddProductForm = ({ value, onClose }) => {
 
               {/* Sizes */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Sizes Available
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -300,10 +303,64 @@ const AddProductForm = ({ value, onClose }) => {
                   ))}
                 </div>
               </div>
+              <div>
+                <label className="block text-red-600 font-bold mb-2">
+                  Color Available
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    "White",
+                    "Black",
+                    "Blue",
+                    "Gray",
+                    "Red",
+                    "Green",
+                    "Pink",
+                    "Yellow",
+                    "Brown",
+                    "Purple",
+                    "Orange",
+                    "Burgundy",
+                    "Teal",
+                    "nocolor",
+                  ].map((color) => (
+                    <div key={color} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={color}
+                        name="color"
+                        value={color}
+                        checked={formData.color?.includes(color)} // Fix: Use formData.color
+                        onChange={(e) => {
+                          const { value } = e.target;
+                          const updatedColors = formData.color || [];
+                          if (updatedColors.includes(value)) {
+                            setFormData({
+                              ...formData,
+                              color: updatedColors.filter(
+                                (item) => item !== value
+                              ),
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              color: [...updatedColors, value],
+                            });
+                          }
+                        }}
+                        className="w-4 h-4 text-indigo-500 border-gray-300 rounded focus:ring-indigo-400"
+                      />
+                      <label htmlFor={color} className="ml-2 text-gray-800">
+                        {color}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Stock */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Stock Quantity
                 </label>
                 <input
@@ -320,7 +377,7 @@ const AddProductForm = ({ value, onClose }) => {
 
               {/* Brand */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Brand
                 </label>
                 <input
@@ -335,7 +392,7 @@ const AddProductForm = ({ value, onClose }) => {
 
               {/* Images */}
               <div>
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-red-600 font-bold mb-2">
                   Upload Images
                 </label>
                 <input
@@ -365,7 +422,7 @@ const AddProductForm = ({ value, onClose }) => {
               </div>
 
               {/* Available Gifts */}
-              <div>
+              {/* <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Available Gifts
                 </label>
@@ -386,9 +443,9 @@ const AddProductForm = ({ value, onClose }) => {
                     </div>
                   ))}
                 </div>
-              </div>
-              {/* <div>
-                <label className="block text-gray-700 font-medium mb-2">
+              </div> */}
+              <div>
+                <label className="block text-red-600 font-bold mb-2">
                   Available Gifts
                 </label>
                 <div className="flex flex-wrap gap-4">
@@ -413,7 +470,7 @@ const AddProductForm = ({ value, onClose }) => {
                       </div>
                     ))}
                 </div>
-              </div> */}
+              </div>
 
               <div className="flex justify-between">
                 <button

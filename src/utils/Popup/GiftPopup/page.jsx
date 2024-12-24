@@ -53,7 +53,6 @@ const GiftVoucherPopup = ({ value, onClose }) => {
 
       if (formData.id) formDataObj.append("id", formData.id); // Ensure ID is sent for update
 
-      // If there's a new photo, append it to the form data
       if (formData.photo && formData.photo !== formData.oldImage) {
         await deleteImageFromCloudinary(formData.oldPublicId); // Delete the old image first
       }
@@ -64,8 +63,6 @@ const GiftVoucherPopup = ({ value, onClose }) => {
         formDataObj.append("oldImage", formData.oldImage);
         formDataObj.append("oldPublicId", formData.oldPublicId);
       }
-
-      // Make the request (POST for new gift)
       await axios.post("/api/gift", formDataObj, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -86,7 +83,6 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     setFormData({ ...formData, photo: file });
   };
 
-  // Delete image from Cloudinary
   const deleteImageFromCloudinary = async (publicId) => {
     try {
       await axios.delete(`/api/gift/delete-image?public_id=${publicId}`);
@@ -94,10 +90,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
       console.error("Error deleting image:", error);
     }
   };
-
-  // Handle delete action
   const handleDelete = async (id) => {
-    console.log("id : ", id);
     try {
       await axios.delete(`/api/gift?id=${id}`);
       fetchGifts();
@@ -108,7 +101,6 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       id: null,
@@ -121,15 +113,12 @@ const GiftVoucherPopup = ({ value, onClose }) => {
     setIsEditing(false);
     setPreview("");
   };
-
-  // Check if gift is disabled
-  const isDisabled = (gift) => gift.disabled;
+  const isDisabled = (gift) => gift.status==='disabled';
 
   return (
     value && (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
         <div className="bg-white rounded-lg shadow-lg w-[90%] max-w-4xl">
-          {/* Header */}
           <div className="flex justify-between items-center px-6 py-4 border-b">
             <h2 className="text-lg font-semibold text-gray-800">
               Manage Gift Vouchers
@@ -142,8 +131,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
             </button>
           </div>
 
-          {/* Gift List */}
-          <div className="p-6 overflow-y-auto max-h-[60vh] text-black">
+          <div className="p-6 overflow-y-auto max-h-[40vh] text-black">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr>
@@ -157,9 +145,9 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                 {gifts.map((gift) => (
                   <tr
                     key={gift.id}
-                    className={`hover:bg-gray-50 ${
-                      isDisabled(gift) ? "bg-gray-300" : ""
-                    }`}
+                    className={`hover:bg-gray-50 ${{
+                      "bg-gray-300": isDisabled(gift),
+                    }}`}
                   >
                     <td className="py-2">
                       <img
@@ -171,13 +159,15 @@ const GiftVoucherPopup = ({ value, onClose }) => {
                     <td className="py-2">{gift.name}</td>
                     <td className="py-2">₹{gift.price}</td>
                     <td className="py-2 text-right space-x-2">
-                      {!isDisabled(gift) && (
+                      {!isDisabled(gift) ? (
                         <button
                           onClick={() => handleDelete(gift._id)}
                           className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                         >
                           Delete
                         </button>
+                      ) : (
+                        <span className="text-gray-500 italic">Disabled</span>
                       )}
                     </td>
                   </tr>

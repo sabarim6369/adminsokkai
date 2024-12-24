@@ -27,6 +27,7 @@ const ProductsPage = () => {
     try {
       const response = await axios.get(`/api/products`);
       toast.success("Product fetched successfully!");
+      console.log("response data :", response.data);
       setproduct(response.data);
     } catch (error) {
       toast.error("Failed to fetch the product!");
@@ -110,13 +111,19 @@ const ProductsPage = () => {
           {greeting}, Vijay
         </h1>
         <div className="xl:ml-[19%] lg:ml-[23%]">
-          <div className="grid grid-cols-1 xl:w-full md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3  gap-y-8 px-3">
+          <div className="grid grid-cols-1 xl:w-full md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-y-8 px-3">
             {products.map((product, index) => (
               <div
                 key={product.id || product._id || index}
                 className="w-full sm:w-72 md:w-80 lg:w-[70%] xl:w-[90%]"
               >
-                <div className="bg-white shadow-lg border border-gray-300 rounded-lg p-6 flex flex-col items-center space-y-4">
+                <div
+                  className={`${
+                    product.status === "inactive"
+                      ? "bg-red-100 border-red-300" // light red background and border for inactive products
+                      : "bg-white border-gray-300" // normal background and border for active products
+                  } shadow-lg rounded-lg p-6 flex flex-col items-center space-y-4`}
+                >
                   <img
                     src={product.images?.[0]?.url || "/placeholder-image.png"}
                     alt={product.name}
@@ -157,7 +164,9 @@ const ProductsPage = () => {
                       <span className="text-gray-500 font-semibold">
                         Total Revenue:
                       </span>
-                      <span className="text-black font-bold">$12345</span>
+                      <span className="text-black font-bold">
+                        {product.total_revenue}
+                      </span>
                     </div>
                   </div>
 
