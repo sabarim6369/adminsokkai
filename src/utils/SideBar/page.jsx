@@ -7,6 +7,7 @@ import AddProductForm from "../Popup/AddProduct/page";
 import Stockavailability from "../Popup/stockavailability/page";
 import GiftVoucherPopup from "../Popup/GiftPopup/page";
 import Signup from "@/utils/Popup/signup/page";
+import CategoryPage from "../../utils/Popup/Category/page";
 const SideBar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [coupunpopup, setcoupunpopup] = useState(false);
@@ -14,7 +15,7 @@ const SideBar = () => {
   const [Stockavailability1, setstockavailability] = useState(false);
   const [giftvoucher, setgiftvoucher] = useState(false);
   const [signuppopup, setsignuppopup] = useState(false);
-
+  const [categoryform, setcategoryform] = useState(false);
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -29,6 +30,9 @@ const SideBar = () => {
   };
   const ToggleGiftVoucher = () => {
     setgiftvoucher(!giftvoucher);
+  };
+  const ToggleCategoryForm = () => {
+    setcategoryform(!categoryform);
   };
   const Togglestockavailability = () => {
     console.log("stockavailability popup passed");
@@ -150,6 +154,9 @@ const SideBar = () => {
             >
               Add New Product
             </div>
+            <div onClick={ToggleCategoryForm} className="bg-[#514f4f79] text-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center w-48 h-10 hover:bg-purple-600 hover:text-white cursor-pointer">
+              Add categories
+            </div>
             <div
               onClick={Togglestockavailability}
               className="bg-[#514f4f79] text-white p-6 mb-2 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center w-48 h-10 hover:bg-purple-600 hover:text-white cursor-pointer"
@@ -166,7 +173,10 @@ const SideBar = () => {
           onClick={toggleSidebar}
         ></div>
       )}
-
+      <CategoryPage
+        value={categoryform}
+        onClose={() => setcategoryform(false)}
+      />
       <CouponPopup value={coupunpopup} onClose={() => setcoupunpopup(false)} />
       <AddProductForm value={AddProduct} onClose={() => setAddProduct(false)} />
       <Stockavailability
@@ -176,6 +186,10 @@ const SideBar = () => {
       <GiftVoucherPopup
         value={giftvoucher}
         onClose={() => setgiftvoucher(false)}
+      />
+      <Signup
+        onOpen={signuppopup}
+        onClose={() => setsignuppopup(!signuppopup)}
       />
       <Signup
         onOpen={signuppopup}

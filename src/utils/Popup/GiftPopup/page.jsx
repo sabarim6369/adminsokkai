@@ -17,8 +17,6 @@ const GiftVoucherPopup = ({ value, onClose }) => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [preview, setPreview] = useState("");
-
-  // Fetch gifts from the server
   const fetchGifts = async () => {
     try {
       const response = await axios.get("/api/gift");
@@ -31,7 +29,7 @@ const GiftVoucherPopup = ({ value, onClose }) => {
 
   useEffect(() => {
     if (value) {
-      document.body.style.overflow = "hidden"; // Disable scroll
+      document.body.style.overflow = "hidden"; 
       fetchGifts();
     } else {
       document.body.style.overflow = ""; // Enable scroll
