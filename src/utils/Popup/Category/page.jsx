@@ -1,12 +1,36 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CategoryList from "./CategoryList";
 import CategoryForm from "./CategoryForm";
 import { FaTimes } from "react-icons/fa";
-function page({ value, onClose }) {
-  console.log("component triggered");
+import axios from "axios";
+
+function Page({ value, onClose }) {
   const [categories, setCategories] = useState([]);
-  console.log("categories consoling : ", categories);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("/api/categories");
+        console.log("response data for the categories:",response.data);
+        if (response.status === 200) {
+          setCategories(response.data);
+        }
+      } catch (error) {
+        setError("Error fetching categories");
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  console.log("categories:", categories);
+
   const addCategory = (name) => {
     const newCategory = {
       id: Date.now(),
@@ -67,9 +91,14 @@ function page({ value, onClose }) {
               {
                 id: Date.now(),
                 name,
-                subcategories: [],
               },
             ],
+          };
+        }
+        if (category.subcategories) {
+          return {
+            ...category,
+            subcategories: addSubcategoryToTree(category.subcategories),
           };
         }
         return category;
@@ -77,6 +106,19 @@ function page({ value, onClose }) {
     };
 
     setCategories(addSubcategoryToTree(categories));
+  };
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post("/api/categories", {
+        categories,
+      });
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Product added successfully");
+      }
+      console.log("Categories submitted:", response.data);
+    } catch (error) {
+      console.error("Error submitting categories:", error);
+    }
   };
 
   return (
@@ -104,6 +146,7 @@ function page({ value, onClose }) {
             <div className="flex justify-end">
               <button
                 type="submit"
+                onClick={handleSubmit}
                 className="px-6 py-2 mb-5 bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors"
               >
                 Submit
@@ -116,4 +159,4 @@ function page({ value, onClose }) {
   );
 }
 
-export default page;
+export default Page;

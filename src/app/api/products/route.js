@@ -45,7 +45,7 @@ export async function POST(request) {
     const stock = form.get("stock");
     const brand = form.get("brand");
     const giftId = form.get("selectedGift");
-
+    console.log("consoling the data of the categories : ", category);
     const files = form.getAll("images");
 
     if (!files || files.length === 0) {

@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
+import ShowCategories from "./ShowCategories";
 
 const AddProductForm = ({ value, onClose }) => {
   const [formData, setFormData] = useState({
@@ -12,17 +13,42 @@ const AddProductForm = ({ value, onClose }) => {
     originalprice: "",
     description: "",
     price: "",
-    category: "",
     stock: "",
     brand: "",
     sizes: [],
     images: [],
     color: [],
     selectedGift: null,
+    categoryids: [],
   });
-
+  const HandelCategory = (parentid, subid) => {
+    console.log("data :", parentid, subid);
+    setFormData((prevData) => ({
+      ...prevData,
+      categoryids: [...prevData.categoryids, parentid, subid],
+    }));
+  };
   const [loading, setLoading] = useState(false);
   const [gifts, setGifts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("/api/categories");
+        console.log("response data for the categories:", response.data);
+        if (response.status === 200) {
+          setCategories(response.data);
+        }
+      } catch (error) {
+        setError("Error fetching categories");
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const fetchGifts = async () => {
@@ -72,7 +98,7 @@ const AddProductForm = ({ value, onClose }) => {
       data.append("description", formData.description);
       data.append("price", formData.price);
       data.append("originalprice", formData.originalprice);
-      data.append("category", formData.category);
+      data.append("category", formData.categoryids);
       data.append("stock", formData.stock);
       data.append("sizes", JSON.stringify(formData.sizes));
       data.append("brand", formData.brand);
@@ -228,44 +254,10 @@ const AddProductForm = ({ value, onClose }) => {
                   required
                 />
               </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-red-600 font-bold mb-2">
-                  Category
-                </label>
-                <div className="flex flex-wrap gap-4">
-                  {[
-                    "Shirts",
-                    "T-Shirts",
-                    "Track Pants",
-                    "Shorts",
-                    "Inner Wears",
-                    "Shoes",
-                    "Accessories",
-                  ].map((category) => (
-                    <label key={category} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="category"
-                        value={category}
-                        checked={formData.category === category}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            category: e.target.value,
-                          }))
-                        }
-                        className="form-radio text-indigo-600"
-                        required
-                      />
-                      <span className="text-gray-700">{category}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sizes */}
+              <ShowCategories
+                categories={categories}
+                HandelCategory={HandelCategory}
+              />
               <div>
                 <label className="block text-red-600 font-bold mb-2">
                   Sizes Available
@@ -421,29 +413,6 @@ const AddProductForm = ({ value, onClose }) => {
                 </div>
               </div>
 
-              {/* Available Gifts */}
-              {/* <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Available Gifts
-                </label>
-                <div className="flex flex-wrap gap-4">
-                  {gifts.map((gift) => (
-                    <div key={gift._id} className="flex items-center">
-                      <button
-                        type="button"
-                        className={`px-4 py-2 rounded-lg ${
-                          formData.selectedGift === gift._id
-                            ? "bg-indigo-500 text-white"
-                            : "bg-gray-200 text-gray-800"
-                        }`}
-                        onClick={() => handleGiftSelect(gift._id)}
-                      >
-                        {gift.name}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
               <div>
                 <label className="block text-red-600 font-bold mb-2">
                   Available Gifts
@@ -451,8 +420,8 @@ const AddProductForm = ({ value, onClose }) => {
                 <div className="flex flex-wrap gap-4">
                   {gifts
                     .filter((gift) => {
-                      console.log(gift.status); // Log the status for each gift
-                      return gift.status === "active"; // Ensure it's correctly being compared
+                      console.log(gift.status);
+                      return gift.status === "active";
                     })
                     .map((gift) => (
                       <div key={gift._id} className="flex items-center">

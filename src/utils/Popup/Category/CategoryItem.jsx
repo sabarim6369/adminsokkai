@@ -6,7 +6,6 @@ function CategoryItem({ category, onEdit, onDelete, onAddSubcategory, isMainCate
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(category.name);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editedName.trim()) {
