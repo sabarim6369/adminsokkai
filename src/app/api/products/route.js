@@ -29,6 +29,14 @@ const deleteFromCloudinary = async (public_id) => {
     throw new Error("Failed to delete image from Cloudinary");
   }
 };
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "60mb",
+    },
+  },
+};
+
 export async function POST(request) {
   await connectMongoDB();
 
