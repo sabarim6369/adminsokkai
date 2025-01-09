@@ -49,11 +49,25 @@ export async function POST(request) {
     const sizes = form.get("sizes");
     const color = form.get("color");
 
+    // Get the category field and convert it into an array of numbers
     const category = form.get("category");
+    const categoryNumbers = category
+      ? category.split(",").map((cat) => parseInt(cat.trim(), 10))
+      : [];
+
+    // Validate categoryNumbers
+    if (categoryNumbers.some((cat) => isNaN(cat))) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid category value. All values must be numbers.",
+        }),
+        { status: 400 }
+      );
+    }
+
     const stock = form.get("stock");
     const brand = form.get("brand");
     const giftId = form.get("selectedGift");
-    console.log("consoling the data of the categories : ", category);
     const files = form.getAll("images");
 
     if (!files || files.length === 0) {
@@ -61,7 +75,8 @@ export async function POST(request) {
         status: 400,
       });
     }
-    console.log("form data raw : ", form);
+
+    console.log("Form data raw: ", form);
     const images = await Promise.all(
       files.map(async (file) => {
         const buffer = await file.arrayBuffer();
@@ -89,13 +104,13 @@ export async function POST(request) {
       originalprice,
       description,
       price,
-      category,
+      category: categoryNumbers,
       stock,
       brand,
       images: successfulImages,
       selectedGift: giftId,
     });
-    console.log("new products : ", newProduct);
+    console.log("New product: ", newProduct);
     const savedProduct = await newProduct.save();
 
     console.log("Saved product:", savedProduct);

@@ -23,10 +23,10 @@ function CategoryItem({ category, HandelCategory }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
 
-  // Handle subcategory click and update selected subcategory
   const handleSubcategoryClick = (subcategoryId) => {
-    setSelectedSubcategoryId(subcategoryId); // Update selected subcategory
-    HandelCategory(category.id, subcategoryId); // Pass to parent component
+    setSelectedSubcategoryId(subcategoryId);
+    console.log("category id mapping  : ",category.id , subcategoryId)
+    HandelCategory(category.id, subcategoryId);
   };
 
   return (
