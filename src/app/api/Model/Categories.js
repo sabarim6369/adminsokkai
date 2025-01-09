@@ -6,9 +6,10 @@ const SubcategorySchema = new mongoose.Schema({
 
 const CategorySchema = new mongoose.Schema({
   name: { type: String, required: true },
-  id: { type: mongoose.Schema.Types.ObjectId, required: true },
+  id: { type: Number, required: true, unique: true }, // Add `unique` if necessary
   subcategories: [SubcategorySchema],
 });
+
 const Category =
   mongoose.models.Category || mongoose.model("Category", CategorySchema);
 export default Category;

@@ -1,11 +1,9 @@
 import Category from "../Model/Categories";
 import connectMongoDB from "../Connection";
-import mongoose from "mongoose";
 export async function POST(request) {
   try {
     await connectMongoDB();
     const body = await request.json();
-    console.log("Consoling the id: ", body);
 
     if (!body.categories || !Array.isArray(body.categories)) {
       return new Response(
@@ -17,19 +15,15 @@ export async function POST(request) {
     }
 
     const processedCategories = [];
-
     for (const category of body.categories) {
-      // Validate category data
       if (!category.id || !category.name) {
         throw new Error(`Invalid category data: ${JSON.stringify(category)}`);
       }
 
-      // Handle subcategories and IDs
-      const categoryId = category.id;
+      const categoryId = Number(category.id); 
       const existingCategory = await Category.findOne({ id: categoryId });
 
       if (existingCategory) {
-        // Update existing category
         const newSubcategories = category.subcategories.filter(
           (sub) =>
             !existingCategory.subcategories.some(
