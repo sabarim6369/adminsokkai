@@ -5,8 +5,8 @@ import { FaEdit, FaTrashAlt } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-import Updateform from "@/utils/Popup/UpdateForm/page";
 import { ToastContainer, toast } from "react-toastify";
+import AddProductForm from "@/utils/Popup/AddProduct/page";
 const ProductsPage = () => {
   const [products, setproduct] = useState([]);
   const [greeting, setGreeting] = useState("");
@@ -236,10 +236,11 @@ const ProductsPage = () => {
       )}
 
       {showPopupUpdate && (
-        <Updateform
+        <AddProductForm
           value={showPopupUpdate}
           onClose={() => setPopupUpdate(false)}
           product={selectedProduct}
+          isEditing={true}
         />
       )}
     </div>

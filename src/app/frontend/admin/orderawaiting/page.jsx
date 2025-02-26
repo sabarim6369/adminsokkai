@@ -2,23 +2,26 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setloading] = useState(true);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await axios.get("/api/customer/orderdata");
+        console.log("response console:", response.data);
 
         const data = response.data.users.flatMap((user) =>
           user.purchaseHistory.map((order) => ({
             id: order._id,
             userId: user._id,
-            customerName: user.name,
+            customerName: user.name || "Unknown",
             phoneNumber: user.address[0]?.phone || "N/A",
-            email: user.email,
+            email: user.email || "N/A",
             address:
               user.address.find((addr) => addr._id === order.addressId)
                 ?.address || "Unknown",
@@ -26,22 +29,25 @@ export default function AdminOrders() {
               user.address.find((addr) => addr._id === order.addressId)
                 ?.location || "Unknown",
             products: order.products.map((product) => ({
-              name: product.productDetails.name,
-              quantity: product.quantity,
-              price: product.totalPrice / product.quantity,
-              size: product.productDetails.sizes.join(", "),
+              name: product.productDetails?.name || "N/A",
+              quantity: product.quantity || 0,
+              price: product.totalPrice / (product.quantity || 1),
+              size: product.size.join(", ") || "N/A",
+              color: product.color.join(", ") || "N/A",
             })),
-            totalAmount: order.totalAmount,
-            status: order.status,
-            paymentMethod: "Online Payment",
+            totalAmount: order.totalAmount || 0,
+            status: order.status || "Unknown",
+            paymentMethod: "O",
           }))
         );
 
         setOrders(data);
+
         console.log("Consoling the order status for the UI:", data);
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
+        console.log("Setting loading to false");
         setloading(false);
       }
     };
@@ -92,6 +98,7 @@ export default function AdminOrders() {
       }
     }
   };
+
   if (loading) {
     return (
       <div
@@ -101,11 +108,11 @@ export default function AdminOrders() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh", // Centers it vertically on the page
+          height: "100vh",
           flexDirection: "column",
         }}
       >
-        <ClipLoader color="#4A90E2" size={100} /> {/* Increased size */}
+        <ClipLoader color="#4A90E2" size={100} />
         <p
           style={{
             fontWeight: "bold",
@@ -119,6 +126,7 @@ export default function AdminOrders() {
       </div>
     );
   }
+
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <h1 className="font-bold mb-4 text-gray-800 text-center text-xl">
@@ -183,6 +191,9 @@ export default function AdminOrders() {
                         <th className="px-2 py-1 border border-gray-500">
                           Price
                         </th>
+                        <th className="px-2 py-1 border border-gray-500">
+                          Color
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -199,6 +210,9 @@ export default function AdminOrders() {
                           </td>
                           <td className="px-2 py-1 border border-gray-500">
                             ₹{product.price}
+                          </td>
+                          <td className="px-2 py-1 border border-gray-500">
+                            {product.color}
                           </td>
                         </tr>
                       ))}

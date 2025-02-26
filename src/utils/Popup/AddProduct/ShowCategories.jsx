@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { MdKeyboardArrowDown, MdKeyboardArrowRight } from "react-icons/md";
-
-function ShowCategories({ categories, HandelCategory }) {
+function ShowCategories({ categories, HandelCategory, selectedCategoryIds }) {
   if (!Array.isArray(categories)) {
     return <div>Invalid data format</div>;
   }
@@ -13,19 +12,20 @@ function ShowCategories({ categories, HandelCategory }) {
           key={category.id}
           category={category}
           HandelCategory={HandelCategory}
+          selectedCategoryIds={selectedCategoryIds}
         />
       ))}
     </div>
   );
 }
 
-function CategoryItem({ category, HandelCategory }) {
+function CategoryItem({ category, HandelCategory, selectedCategoryIds }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(null);
 
   const handleSubcategoryClick = (subcategoryId) => {
     setSelectedSubcategoryId(subcategoryId);
-    console.log("category id mapping  : ",category.id , subcategoryId)
+    console.log("category id mapping  : ", category.id, subcategoryId);
     HandelCategory(category.id, subcategoryId);
   };
 
@@ -58,9 +58,10 @@ function CategoryItem({ category, HandelCategory }) {
                 key={subcategory.id}
                 onClick={() => handleSubcategoryClick(subcategory.id)}
                 className={`flex items-center justify-center rounded-lg w-52 h-12 gap-2 mb-2 cursor-pointer ${
+                  selectedCategoryIds.includes(category.id) &&
                   selectedSubcategoryId === subcategory.id
-                    ? "bg-blue-500 text-white" 
-                    : "bg-black text-white" 
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-800"
                 }`}
               >
                 <span>{subcategory.name}</span>

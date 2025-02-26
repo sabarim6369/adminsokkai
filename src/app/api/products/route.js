@@ -36,24 +36,66 @@ export const config = {
     },
   },
 };
-
 export async function POST(request) {
+  console.log("endpoint reached");
   await connectMongoDB();
-
   try {
     const form = await request.formData();
-    const name = form.get("name");
-    const originalprice = form.get("originalprice");
-    const description = form.get("description");
-    const price = form.get("price");
-    const sizes = form.get("sizes");
-    const color = form.get("color");
+    console.log("Form data raw:", form);
 
-    // Get the category field and convert it into an array of numbers
+    const name = form.get("name");
+    console.log("Name:", name);
+
+    const originalprice = form.get("originalprice");
+    console.log("Original Price:", originalprice);
+
+    const description = form.get("description");
+    console.log("Description:", description);
+
+    const price = form.get("price");
+    console.log("Price:", price);
+
+    const sizes = form.get("sizes");
+    console.log("Sizes:", sizes);
+
+    const color = form.get("color");
+    console.log("Color:", color);
+
     const category = form.get("category");
-    const categoryNumbers = category
-      ? category.split(",").map((cat) => parseInt(cat.trim(), 10))
-      : [];
+    console.log("Category raw:", category);
+
+    // Convert category string to an array of numbers
+    let categoryNumbers;
+    try {
+      // Attempt to parse as JSON first
+      categoryNumbers = JSON.parse(category);
+      // Ensure all elements are valid numbers
+      categoryNumbers = categoryNumbers.map((cat) => {
+        const num = BigInt(cat);
+        if (isNaN(Number(num))) {
+          throw new Error(
+            "Invalid category value. All values must be valid numbers."
+          );
+        }
+        return Number(num);
+      });
+    } catch (error) {
+      // If JSON parsing fails, try to split and parse as integers
+      categoryNumbers = category
+        .replace(/^\[|\]$/g, "") // Remove square brackets if present
+        .split(",")
+        .map((cat) => {
+          const num = BigInt(cat.trim());
+          if (isNaN(Number(num))) {
+            throw new Error(
+              "Invalid category value. All values must be valid numbers."
+            );
+          }
+          return Number(num);
+        });
+    }
+
+    console.log("Category Numbers:", categoryNumbers);
 
     // Validate categoryNumbers
     if (categoryNumbers.some((cat) => isNaN(cat))) {
@@ -66,9 +108,16 @@ export async function POST(request) {
     }
 
     const stock = form.get("stock");
+    console.log("Stock:", stock);
+
     const brand = form.get("brand");
+    console.log("Brand:", brand);
+
     const giftId = form.get("selectedGift");
+    console.log("Selected Gift ID:", giftId);
+
     const files = form.getAll("images");
+    console.log("Files:", files);
 
     if (!files || files.length === 0) {
       return new Response(JSON.stringify({ error: "No files were uploaded" }), {
@@ -76,7 +125,6 @@ export async function POST(request) {
       });
     }
 
-    console.log("Form data raw: ", form);
     const images = await Promise.all(
       files.map(async (file) => {
         const buffer = await file.arrayBuffer();
@@ -89,7 +137,11 @@ export async function POST(request) {
       })
     );
 
+    console.log("Images after upload:", images);
+
     const successfulImages = images.filter((image) => !image.error);
+    console.log("Successful Images:", successfulImages);
+
     if (successfulImages.length === 0) {
       return new Response(
         JSON.stringify({ error: "All image uploads failed" }),
@@ -110,10 +162,13 @@ export async function POST(request) {
       images: successfulImages,
       selectedGift: giftId,
     });
-    console.log("New product: ", newProduct);
+
+    console.log("New product:", newProduct);
+
     const savedProduct = await newProduct.save();
 
     console.log("Saved product:", savedProduct);
+
     return new Response(JSON.stringify(savedProduct), { status: 201 });
   } catch (error) {
     console.error("Error while creating product:", error);
@@ -123,7 +178,6 @@ export async function POST(request) {
     );
   }
 }
-
 export async function GET() {
   await connectMongoDB();
 
@@ -150,65 +204,25 @@ export async function PUT(request) {
     const originalprice = form.get("originalprice");
     const description = form.get("description");
     const price = form.get("price");
-    const category = form.get("category");
     const stock = form.get("stock");
     const sizes = JSON.parse(form.get("sizes") || "[]");
     const brand = form.get("brand");
 
-    const sentImagePublicIds = JSON.parse(form.get("sentImages") || "[]");
-    const files = form.getAll("images");
-    console.log("New images from frontend:", files);
+    // Parse category correctly as an array of numbers
+    const categoryRaw = form.get("category");
+    const category = categoryRaw
+      ? JSON.parse(categoryRaw).map((cat) => Number(cat))
+      : [];
+
+    console.log("Parsed category:", category);
+
+    // Fetch the existing product
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {
       return new Response(JSON.stringify({ error: "Product not found" }), {
         status: 404,
       });
     }
-    const retainedImages = existingProduct.images.filter((img) =>
-      sentImagePublicIds.includes(img.public_id)
-    );
-    const imagesToRemove = existingProduct.images.filter(
-      (img) => !sentImagePublicIds.includes(img.public_id)
-    );
-
-    if (imagesToRemove.length > 0) {
-      try {
-        await Promise.all(
-          imagesToRemove.map(async (img) => {
-            console.log(`Deleting image: ${img.public_id}`);
-            await deleteFromCloudinary(img.public_id);
-          })
-        );
-      } catch (error) {
-        console.error("Error while removing images from Cloudinary:", error);
-        return new Response(
-          JSON.stringify({ error: "Failed to remove unused images" }),
-          { status: 500 }
-        );
-      }
-    }
-
-    const newImages = await Promise.all(
-      files.map(async (file) => {
-        try {
-          console.log("Uploading new image:", file.name || "Unnamed file");
-          const buffer = await file.arrayBuffer();
-          const base64 = Buffer.from(buffer).toString("base64");
-          const uploadedImage = await uploadToCloudinary(
-            `data:${file.type};base64,${base64}`
-          );
-          console.log("Uploaded image successfully:", uploadedImage);
-          return uploadedImage;
-        } catch (err) {
-          console.error("Error uploading image:", err);
-          throw err;
-        }
-      })
-    );
-
-    const updatedImages = [...retainedImages, ...newImages];
-    console.log("Final updated images:", updatedImages);
-
     const updatedData = {
       name,
       originalprice,
@@ -218,14 +232,16 @@ export async function PUT(request) {
       stock,
       sizes,
       brand,
-
-      images: updatedImages,
+      color,
       updatedAt: Date.now(),
     };
 
+    console.log("Updated data:", updatedData);
     const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
       new: true,
     });
+
+    console.log("Updated product:", updatedProduct);
 
     return new Response(JSON.stringify(updatedProduct), { status: 200 });
   } catch (error) {
@@ -239,7 +255,6 @@ export async function PUT(request) {
     );
   }
 }
-
 export async function DELETE(request) {
   await connectMongoDB();
 

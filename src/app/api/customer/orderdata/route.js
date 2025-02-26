@@ -10,8 +10,8 @@ export async function GET() {
       .find({})
       .toArray();
 
-    // Array to hold filtered user data
     const usersWithPendingOrders = [];
+    const mergedProducts = [];
 
     for (const user of users) {
       if (user.purchaseHistory) {
@@ -22,25 +22,38 @@ export async function GET() {
         if (pendingOrders.length > 0) {
           const enrichedOrders = await Promise.all(
             pendingOrders.map(async (order) => {
-              // Get address details
               const address = user.address?.find(
-                (addr) => addr._id === order.addressId
+                (addr) => addr._id.toString() === order.addressId.toString()
               );
 
-              // Get product details for each product in the order
               const products = await Promise.all(
                 order.products.map(async (product) => {
                   const productDetails = await mongoose.connection.db
                     .collection("products")
                     .findOne(
                       { _id: new mongoose.Types.ObjectId(product.productId) },
-                      { projection: { reviews: 0, images: 0 } } // Exclude reviews and images
+                      { projection: { reviews: 0, images: 0 } }
                     );
 
-                  return {
+                  if (!productDetails) {
+                    console.error(
+                      `Product details not found for product ID: ${product.productId}`
+                    );
+                    return product; // Return the existing product data if details are not found
+                  }
+
+                  // Merge existing product data with fetched product details
+                  const mergedProduct = {
                     ...product,
                     productDetails,
                   };
+
+                  // Store merged product for response
+                  mergedProducts.push(mergedProduct);
+
+                  console.log("Merged Product:", mergedProduct);
+
+                  return mergedProduct;
                 })
               );
 
@@ -60,18 +73,21 @@ export async function GET() {
       }
     }
 
-    return Response.json(
-      {
+    console.log("Users with pending orders:", usersWithPendingOrders);
+
+    return new Response(
+      JSON.stringify({
         message: "Pending orders fetched successfully",
         users: usersWithPendingOrders,
-      },
+        mergedProducts, 
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error fetching pending orders:", error);
 
-    return Response.json(
-      { error: "Error fetching pending orders" },
+    return new Response(
+      JSON.stringify({ error: "Error fetching pending orders" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
